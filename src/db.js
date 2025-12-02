@@ -62,9 +62,9 @@ export const saveRecentFile = async (file) => {
         const toDelete = all.slice(0, all.length - 50)
         const tx = db.transaction(RECENT_FILES_STORE, 'readwrite')
         const store = tx.objectStore(RECENT_FILES_STORE)
-        for (const item of toDelete) {
-            await store.delete(item.path)
-        }
+
+        // Use Promise.all to avoid transaction timeout
+        await Promise.all(toDelete.map(item => store.delete(item.path)))
         await tx.done
     }
 }
@@ -157,6 +157,13 @@ export const addTag = async (file, tag) => {
     // file can be just path string (legacy) or object {path, handle, ...}
     // We want to ensure we store the handle if available
     const path = file.path || file
+
+    // Validate path is not empty
+    if (!path || typeof path !== 'string' || path.trim() === '') {
+        console.error('Invalid path provided to addTag:', file)
+        await tx.done
+        return []
+    }
 
     const item = await store.get(path) || { path, tags: [] }
 
