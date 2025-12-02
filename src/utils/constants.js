@@ -6,7 +6,7 @@ export const ALLOWED_EXTENSIONS = [
 ]
 
 export const MODEL_EXTENSIONS = ['.fbx', '.obj', '.gltf', '.glb', '.ma', '.mb', '.blend']
-export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg']
+export const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.tga', '.tif', '.tiff', '.bmp', '.psd']
 export const AUDIO_EXTENSIONS = ['.mp3', '.wav', '.ogg']
 export const VIDEO_EXTENSIONS = ['.mp4', '.webm']
 
