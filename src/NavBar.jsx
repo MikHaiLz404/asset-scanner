@@ -18,12 +18,13 @@ export default function NavBar({
 
     return (
         <nav style={{
-            height: '60px',
+            height: 'auto',
+            minHeight: '60px',
             backgroundColor: 'var(--bg-secondary)',
             borderBottom: '1px solid var(--border-color)',
             display: 'flex',
             alignItems: 'center',
-            padding: '0 1.5rem',
+            padding: '0.5rem 1.5rem',
             gap: '1.5rem',
             position: 'sticky',
             top: 0,
@@ -56,41 +57,46 @@ export default function NavBar({
             </div>
 
             {/* Center: Search */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
-                <select
-                    value={searchType}
-                    onChange={(e) => onSearchTypeChange(e.target.value)}
-                    style={{
-                        padding: '0 1rem',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-color)',
-                        backgroundColor: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.875rem',
-                        outline: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
-                    <option value="file">File</option>
-                    <option value="folder">Folder</option>
-                </select>
-                <input
-                    type="text"
-                    placeholder={searchType === 'folder' ? "Search folders..." : "Search assets..."}
-                    value={searchQuery}
-                    onChange={(e) => onSearchChange(e.target.value)}
-                    style={{
-                        width: '100%',
-                        maxWidth: '500px',
-                        padding: '0.5rem 1rem',
-                        borderRadius: 'var(--radius-md)',
-                        border: '1px solid var(--border-color)',
-                        backgroundColor: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.875rem',
-                        outline: 'none'
-                    }}
-                />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', width: '100%', justifyContent: 'center', gap: '0.5rem' }}>
+                    <select
+                        value={searchType}
+                        onChange={(e) => onSearchTypeChange(e.target.value)}
+                        style={{
+                            padding: '0 1rem',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.875rem',
+                            outline: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        <option value="file">File</option>
+                        <option value="folder">Folder</option>
+                    </select>
+                    <input
+                        type="text"
+                        placeholder={searchType === 'folder' ? "Search folders..." : "Search assets..."}
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        style={{
+                            width: '100%',
+                            maxWidth: '500px',
+                            padding: '0.5rem 1rem',
+                            borderRadius: 'var(--radius-md)',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            fontSize: '0.875rem',
+                            outline: 'none'
+                        }}
+                    />
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+                    💡 Tip: For the best FBX experience, please refresh textures before opening the file.
+                </div>
             </div>
 
             {/* Right: Menus */}
