@@ -1,11 +1,13 @@
 import React, { Suspense, useEffect, useState, useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Stage, Center, Bounds } from '@react-three/drei'
+import { OrbitControls, Stage, Center, Bounds, Grid } from '@react-three/drei'
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
+
+
 import { addTag, removeTag, getTagsForFile } from './db'
 import { IMAGE_EXTENSIONS, MODEL_EXTENSIONS } from './utils/constants'
 
@@ -39,11 +41,11 @@ class ErrorBoundary extends React.Component {
     }
 }
 
-function Model({ url, type, manager }) {
+function Model({ url, type, manager, isWireframe }) {
     console.log("Rendering Model:", type, url)
-    if (type === '.fbx') return <FBXModel url={url} manager={manager} />
-    if (type === '.obj') return <OBJModel url={url} manager={manager} />
-    if (type === '.gltf' || type === '.glb') return <GLTFModel url={url} manager={manager} />
+    if (type === '.fbx') return <FBXModel url={url} manager={manager} isWireframe={isWireframe} />
+    if (type === '.obj') return <OBJModel url={url} manager={manager} isWireframe={isWireframe} />
+    if (type === '.gltf' || type === '.glb') return <GLTFModel url={url} manager={manager} isWireframe={isWireframe} />
     return null
 }
 
@@ -119,7 +121,7 @@ const createPlaceholderTexture = () => {
     return new Promise(resolve => canvas.toBlob(resolve))
 }
 
-function FBXModel({ url, manager }) {
+function FBXModel({ url, manager, isWireframe }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
     }, [manager])
@@ -132,10 +134,23 @@ function FBXModel({ url, manager }) {
         fixMaterials(clone)
         return clone
     }, [fbx])
+
+    useEffect(() => {
+        scene.traverse((child) => {
+            if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.wireframe = isWireframe)
+                } else {
+                    child.material.wireframe = isWireframe
+                }
+            }
+        })
+    }, [scene, isWireframe])
+
     return <primitive object={scene} />
 }
 
-function OBJModel({ url, manager }) {
+function OBJModel({ url, manager, isWireframe }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
     }, [manager])
@@ -146,10 +161,23 @@ function OBJModel({ url, manager }) {
         fixMaterials(clone)
         return clone
     }, [obj])
+
+    useEffect(() => {
+        scene.traverse((child) => {
+            if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.wireframe = isWireframe)
+                } else {
+                    child.material.wireframe = isWireframe
+                }
+            }
+        })
+    }, [scene, isWireframe])
+
     return <primitive object={scene} />
 }
 
-function GLTFModel({ url, manager }) {
+function GLTFModel({ url, manager, isWireframe }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
     }, [manager])
@@ -160,6 +188,19 @@ function GLTFModel({ url, manager }) {
         fixMaterials(clone)
         return clone
     }, [gltf])
+
+    useEffect(() => {
+        scene.traverse((child) => {
+            if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.wireframe = isWireframe)
+                } else {
+                    child.material.wireframe = isWireframe
+                }
+            }
+        })
+    }, [scene, isWireframe])
+
     return <primitive object={scene} />
 }
 
@@ -176,6 +217,8 @@ function FormatBytes(bytes, decimals = 2) {
 }
 
 export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext, hasPrevious, projectFiles = [] }) {
+    const [showGrid, setShowGrid] = useState(true)
+    const [isWireframe, setIsWireframe] = useState(false)
     const [url, setUrl] = useState(null)
     const [metadata, setMetadata] = useState(null)
     const [dimensions, setDimensions] = useState(null) // { width, height }
@@ -415,13 +458,31 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                                             <Suspense fallback={null}>
                                                 <Stage environment="studio" intensity={7} adjustCamera={false} shadows={false}>
                                                     <Bounds fit clip observe margin={2.5}>
-                                                        <Model url={url} type={file.type} manager={manager} />
+                                                        <Model url={url} type={file.type} manager={manager} isWireframe={isWireframe} />
                                                     </Bounds>
                                                 </Stage>
+                                                {showGrid && <Grid infiniteGrid fadeDistance={500} sectionColor="#444" cellColor="#222" />}
+                                                {showGrid && <axesHelper args={[500]} />}
                                             </Suspense>
                                             <OrbitControls makeDefault />
                                         </Canvas>
                                     </ErrorBoundary>
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '60px',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        display: 'flex',
+                                        gap: '10px',
+                                        zIndex: 10
+                                    }}>
+                                        <button onClick={() => setShowGrid(!showGrid)} style={{ padding: '8px 16px', borderRadius: '20px', background: showGrid ? '#4CAF50' : '#333', color: 'white', border: 'none', cursor: 'pointer' }}>
+                                            Grid
+                                        </button>
+                                        <button onClick={() => setIsWireframe(!isWireframe)} style={{ padding: '8px 16px', borderRadius: '20px', background: isWireframe ? '#4CAF50' : '#333', color: 'white', border: 'none', cursor: 'pointer' }}>
+                                            Wireframe
+                                        </button>
+                                    </div>
                                     <div style={{
                                         position: 'absolute',
                                         bottom: '20px',
