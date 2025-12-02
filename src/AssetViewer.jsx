@@ -290,7 +290,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
             if (placeholderUrl) URL.revokeObjectURL(placeholderUrl)
             textureUrls.forEach(u => URL.revokeObjectURL(u))
         }
-    }, [file, projectFiles])
+    }, [file]) // Remove projectFiles to prevent reloading when background scan updates
 
     useEffect(() => {
         const handleKeyDown = (e) => {

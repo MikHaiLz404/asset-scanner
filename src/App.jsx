@@ -18,11 +18,12 @@ function App() {
   // 1. File System State
   const {
     files, setFiles,
-    projectFiles, setProjectFiles,
-    folders, // Get folders from hook
-    isScanning, setIsScanning,
-    rootHandle, setRootHandle,
+    folders,
     scanDirectory,
+    rootHandle, setRootHandle,
+    projectFiles, setProjectFiles,
+    refreshFolder,
+    isScanning, setIsScanning,
     stopScan
   } = useFileSystem()
 
@@ -501,7 +502,7 @@ function App() {
         />
 
         {/* Main Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 2rem', overflowY: 'auto' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 2rem', overflowY: 'auto', position: 'relative' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             {viewMode === 'folder' ? (
@@ -594,7 +595,31 @@ function App() {
           {/* Grid */}
           {isScanning ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
-              <div>Scanning...</div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                backgroundColor: 'var(--bg-secondary)',
+                padding: '0.5rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--accent-primary)',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                <div className="spinner" style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid var(--text-secondary)',
+                  borderTopColor: 'var(--accent-primary)',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <span>Scanning...</span>
+                <style>{`
+                      @keyframes spin {
+                          to { transform: rotate(360deg); }
+                      }
+                  `}</style>
+              </div>
               <button
                 onClick={stopScan}
                 style={{
