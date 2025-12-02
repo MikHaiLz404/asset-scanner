@@ -62,9 +62,9 @@ export const saveRecentFile = async (file) => {
         const toDelete = all.slice(0, all.length - 50)
         const tx = db.transaction(RECENT_FILES_STORE, 'readwrite')
         const store = tx.objectStore(RECENT_FILES_STORE)
-        for (const item of toDelete) {
-            await store.delete(item.path)
-        }
+
+        // Use Promise.all to avoid transaction timeout
+        await Promise.all(toDelete.map(item => store.delete(item.path)))
         await tx.done
     }
 }
