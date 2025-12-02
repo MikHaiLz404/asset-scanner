@@ -47,17 +47,31 @@ export function useFileSystem() {
                                 path: entryPath,
                                 kind: entry.kind,
                                 type: ext,
-                                handle: entry
+                                handle: entry,
+                                status: 'accepted'
                             }
                         } else {
-                            // Log skipped file
-                            if (path.includes('Haruhina')) {
-                                console.log(`[Debug-Haruhina] Skipped file: ${entry.name} (ext: ${ext})`)
+                            // Yield skipped file so we can count it
+                            yield {
+                                id: entryPath,
+                                name: entry.name,
+                                path: entryPath,
+                                kind: entry.kind,
+                                type: ext,
+                                handle: entry,
+                                status: 'skipped'
                             }
                         }
                     } else {
-                        if (path.includes('Haruhina')) {
-                            console.log(`[Debug-Haruhina] Skipped file (no extension): ${entry.name}`)
+                        // No extension
+                        yield {
+                            id: entryPath,
+                            name: entry.name,
+                            path: entryPath,
+                            kind: entry.kind,
+                            type: 'unknown',
+                            handle: entry,
+                            status: 'skipped'
                         }
                     }
                 } else if (entry.kind === 'directory') {
@@ -92,6 +106,8 @@ export function useFileSystem() {
         }
     }
 
+    const [totalScanned, setTotalScanned] = useState(0) // Total files encountered
+
     const scan = useCallback(async (handle) => {
         console.log('=== Starting scan ===')
         console.log('Handle:', handle.name, handle.kind)
@@ -101,51 +117,63 @@ export function useFileSystem() {
         setFiles([])
         setProjectFiles([])
         setFolders([])
+        setTotalScanned(0)
 
-        const allFiles = []
-        const allFolders = []
-        let batchFiles = []
+        const allAcceptedFiles = []
+        const allAcceptedFolders = []
+        let batchAcceptedFiles = []
         const BATCH_SIZE = 500 // Update UI every 500 files to reduce overhead
         let lastUpdate = Date.now()
 
         try {
             console.log('Starting directory scan generator...')
-            let fileCount = 0
-            let skippedCount = 0
-            const skippedExtensions = new Set()
+            let acceptedFileCount = 0
+            let totalEntriesScanned = 0 // Track all files and directories seen by the generator
 
             for await (const entry of scanDirectoryGenerator(handle)) {
-                if (entry.kind === 'directory') {
-                    allFolders.push(entry)
-                } else {
-                    fileCount++
-                    // Log less frequently
-                    if (fileCount % 1000 === 0) {
-                        console.log(`Found file #${fileCount}:`, entry.name)
-                    }
+                totalEntriesScanned++
 
-                    allFiles.push(entry)
-                    batchFiles.push(entry)
+                if (entry.kind === 'directory') {
+                    if (IGNORED_FOLDERS.includes(entry.name)) {
+                        // console.log(`Ignoring folder: ${entry.name}`)
+                        continue // Skip this directory and its contents
+                    }
+                    allAcceptedFolders.push(entry)
+                } else { // entry.kind === 'file'
+                    // Robust extension extraction: handle multiple dots, case, and whitespace
+                    if (entry.status === 'accepted') {
+                        acceptedFileCount++
+                        // Log less frequently
+                        if (acceptedFileCount % 1000 === 0) {
+                            console.log(`Found accepted file #${acceptedFileCount}:`, entry.name)
+                        }
+
+                        allAcceptedFiles.push(entry)
+                        batchAcceptedFiles.push(entry)
+                    } else {
+                        // console.log(`Skipped file (unallowed extension): ${entry.name} (ext: ${ext})`)
+                    }
                 }
 
                 // Update state periodically to show progress
                 const now = Date.now()
                 // Update if batch is full OR if 200ms has passed (less frequent updates = faster scan)
-                if (batchFiles.length >= BATCH_SIZE || now - lastUpdate > 200) {
-                    console.log(`Batch update: ${allFiles.length} files found so far`)
-                    setFiles(prev => [...prev, ...batchFiles])
-                    setProjectFiles(prev => [...prev, ...batchFiles])
+                if (batchAcceptedFiles.length >= BATCH_SIZE || now - lastUpdate > 200) {
+                    console.log(`Batch update: ${allAcceptedFiles.length} accepted files found so far, ${totalEntriesScanned} total entries scanned.`)
+                    setFiles(prev => [...prev, ...batchAcceptedFiles])
+                    setProjectFiles(prev => [...prev, ...batchAcceptedFiles])
+                    setTotalScanned(totalEntriesScanned) // Update total scanned entries
 
-                    if (allFolders.length > 0) {
+                    if (allAcceptedFolders.length > 0) {
                         setFolders(prev => {
                             // Optimization: Only append new folders if we really need to.
                             // For now, just replacing with current list is safest but maybe slow if huge.
                             // Let's stick to the previous safe logic but maybe optimize later if needed.
-                            return [...allFolders]
+                            return [...allAcceptedFolders]
                         })
                     }
 
-                    batchFiles = []
+                    batchAcceptedFiles = []
                     lastUpdate = now
                     // Allow UI to breathe, but use a slightly longer timeout to ensure browser handles events
                     // In background tabs, this might still be throttled, but processing 500 items per tick helps.
@@ -154,23 +182,25 @@ export function useFileSystem() {
             }
 
             // Flush remaining
-            if (batchFiles.length > 0) {
-                setFiles(prev => [...prev, ...batchFiles])
-                setProjectFiles(prev => [...prev, ...batchFiles])
+            if (batchAcceptedFiles.length > 0) {
+                setFiles(prev => [...prev, ...batchAcceptedFiles])
+                setProjectFiles(prev => [...prev, ...batchAcceptedFiles])
             }
             // Final folder update
-            setFolders([...allFolders])
+            setFolders([...allAcceptedFolders])
+            setTotalScanned(totalEntriesScanned) // Final update for total scanned
 
-            const haruhinaFiles = allFiles.filter(f => f.path.includes('Haruhina'))
+            const haruhinaFiles = allAcceptedFiles.filter(f => f.path.includes('Haruhina'))
             console.log(`[Debug] Scan complete.`)
-            console.log(`[Debug] Total files found: ${allFiles.length}`)
-            console.log(`[Debug] Total folders found: ${allFolders.length}`)
+            console.log(`[Debug] Total entries scanned (files+folders): ${totalEntriesScanned}`)
+            console.log(`[Debug] Total accepted files found: ${allAcceptedFiles.length}`)
+            console.log(`[Debug] Total accepted folders found: ${allAcceptedFolders.length}`)
             console.log(`[Debug] Files containing 'Haruhina': ${haruhinaFiles.length}`)
             if (haruhinaFiles.length > 0) {
                 console.log(`[Debug] First 5 Haruhina files:`, haruhinaFiles.slice(0, 5).map(f => f.path))
             }
 
-            return { files: allFiles, folders: allFolders }
+            return { files: allAcceptedFiles, folders: allAcceptedFolders }
         } catch (err) {
             console.error("Scan failed:", err)
             console.error("Error stack:", err.stack)
@@ -256,6 +286,7 @@ export function useFileSystem() {
         setRootHandle,
         scanDirectory: scan,
         stopScan,
-        refreshFolder
+        refreshFolder,
+        totalScanned
     }
 }

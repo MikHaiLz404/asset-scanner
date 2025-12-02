@@ -24,7 +24,8 @@ function App() {
     projectFiles, setProjectFiles,
     refreshFolder,
     isScanning, setIsScanning,
-    stopScan
+    stopScan,
+    totalScanned
   } = useFileSystem()
 
   // 2. Navigation State
@@ -613,7 +614,7 @@ function App() {
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite'
                 }} />
-                <span>Scanning... ({files.length} files)</span>
+                <span>Scanning... ({files.length} / {totalScanned} scanned)</span>
                 <style>{`
                       @keyframes spin {
                           to { transform: rotate(360deg); }
