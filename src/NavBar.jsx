@@ -5,6 +5,8 @@ export default function NavBar({
     onHome,
     searchQuery,
     onSearchChange,
+    searchType,
+    onSearchTypeChange,
     onRecentClick,
     bookmarks,
     onBookmarkClick,
@@ -54,10 +56,27 @@ export default function NavBar({
             </div>
 
             {/* Center: Search */}
-            <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                <select
+                    value={searchType}
+                    onChange={(e) => onSearchTypeChange(e.target.value)}
+                    style={{
+                        padding: '0 1rem',
+                        borderRadius: 'var(--radius-md)',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.875rem',
+                        outline: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <option value="file">File</option>
+                    <option value="folder">Folder</option>
+                </select>
                 <input
                     type="text"
-                    placeholder="Search assets..."
+                    placeholder={searchType === 'folder' ? "Search folders..." : "Search assets..."}
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                     style={{
