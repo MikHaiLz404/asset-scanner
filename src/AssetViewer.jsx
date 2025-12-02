@@ -7,6 +7,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import { useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { addTag, removeTag, getTagsForFile } from './db'
+import { IMAGE_EXTENSIONS, MODEL_EXTENSIONS } from './utils/constants'
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -141,7 +142,10 @@ function FormatBytes(bytes, decimals = 2) {
     const dm = decimals < 0 ? 0 : decimals
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
     const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]} `
+
+    // Clamp i to valid array indices to prevent undefined access
+    const clampedI = Math.max(0, Math.min(i, sizes.length - 1))
+    return `${parseFloat((bytes / Math.pow(k, clampedI)).toFixed(dm))} ${sizes[clampedI]}`
 }
 
 export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext, hasPrevious, projectFiles = [] }) {
@@ -179,7 +183,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
 
             // 2. Texture Resolver Logic
             // Only for 3D models
-            if (['.fbx', '.obj', '.gltf', '.glb', '.ma', '.mb', '.blend'].includes(file.type)) {
+            if (MODEL_EXTENSIONS.includes(file.type)) {
                 // Strategy: Look for textures in:
                 // 1. Same directory
                 // 2. Parent directory (e.g. if model is in /mesh and texture is in /)
@@ -195,7 +199,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
 
                 // Find all potential texture files in the subtree of the grandparent
                 const nearbyTextures = projectFiles.filter(f => {
-                    const isImage = ['.png', '.jpg', '.jpeg', '.tga', '.bmp'].includes(f.type)
+                    const isImage = IMAGE_EXTENSIONS.includes(f.type)
                     // Check if file is within the grandparent path (or root if no grandparent)
                     const isInScope = grandparentPath ? f.path.startsWith(grandparentPath + '/') : true
                     return isInScope && isImage
@@ -311,8 +315,8 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
         setTags(newTags)
     }
 
-    const isModel = ['.fbx', '.obj', '.gltf', '.glb', '.ma', '.mb', '.blend'].includes(file.type)
-    const isImage = ['.png', '.jpg', '.jpeg'].includes(file.type)
+    const isModel = MODEL_EXTENSIONS.includes(file.type)
+    const isImage = IMAGE_EXTENSIONS.includes(file.type)
     const isAudio = ['.mp3', '.wav', '.ogg'].includes(file.type)
     const isVideo = ['.mp4', '.webm'].includes(file.type)
 

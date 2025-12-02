@@ -164,14 +164,25 @@ function App() {
 
       const taggedItems = allTags.filter(item => item.tags.includes(tag))
 
-      const mappedFiles = taggedItems.map((item) => ({
-        id: item.path,
-        name: item.name || item.path.split('/').pop(),
-        path: item.path,
-        type: item.type || '.' + item.path.split('/').pop().split('.').pop().toLowerCase(),
-        handle: item.handle,
-        kind: 'file'
-      }))
+      const mappedFiles = taggedItems.map((item) => {
+        // Safe type extraction with validation
+        let fileType = item.type
+        if (!fileType) {
+          const filename = item.path.split('/').pop()
+          const parts = filename.split('.')
+          // Only extract extension if there's actually a dot and an extension
+          fileType = parts.length > 1 ? '.' + parts.pop().toLowerCase() : ''
+        }
+
+        return {
+          id: item.path,
+          name: item.name || item.path.split('/').pop(),
+          path: item.path,
+          type: fileType,
+          handle: item.handle,
+          kind: 'file'
+        }
+      })
 
       setFiles(mappedFiles)
       setViewMode('collection')
@@ -204,7 +215,10 @@ function App() {
 
   const handleFileClick = (file) => {
     setSelectedFile(file)
-    saveRecentFile(file)
+    // Only save to recent files if the file has a valid handle
+    if (file && file.handle && file.path) {
+      saveRecentFile(file)
+    }
   }
 
   // Derived State

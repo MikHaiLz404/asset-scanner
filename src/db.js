@@ -158,6 +158,13 @@ export const addTag = async (file, tag) => {
     // We want to ensure we store the handle if available
     const path = file.path || file
 
+    // Validate path is not empty
+    if (!path || typeof path !== 'string' || path.trim() === '') {
+        console.error('Invalid path provided to addTag:', file)
+        await tx.done
+        return []
+    }
+
     const item = await store.get(path) || { path, tags: [] }
 
     // Update handle if provided and missing

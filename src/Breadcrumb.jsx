@@ -46,7 +46,8 @@ export default function Breadcrumb({ currentPath, onNavigate }) {
                                 color: isLast ? 'var(--text-primary)' : 'var(--accent-primary)',
                                 cursor: isLast ? 'default' : 'pointer',
                                 padding: 0,
-                                fontWeight: isLast ? 'bold' : 'normal'
+                                fontWeight: isLast ? 'bold' : 'normal',
+                                opacity: isLast ? 1 : 0.9
                             }}
                             disabled={isLast}
                         >
