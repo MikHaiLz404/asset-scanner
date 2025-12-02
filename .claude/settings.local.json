@@ -5,7 +5,13 @@
       "Bash(tree -L 3 -a:*)",
       "Bash(cat:*)",
       "Bash(git ls-tree:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(test:*)",
+      "Bash(npm install)",
+      "Bash(export PATH=\"$HOME/.nvm/versions/node/v22.11.0/bin:$PATH\")",
+      "Bash(node --version:*)",
+      "Bash(npm --version:*)",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []

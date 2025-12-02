@@ -18,10 +18,12 @@ function App() {
   // 1. File System State
   const {
     files, setFiles,
-    projectFiles, setProjectFiles,
-    isScanning, setIsScanning,
-    rootHandle, setRootHandle,
+    folders,
     scanDirectory,
+    rootHandle, setRootHandle,
+    projectFiles, setProjectFiles,
+    refreshFolder,
+    isScanning, setIsScanning,
     stopScan
   } = useFileSystem()
 
@@ -89,11 +91,15 @@ function App() {
   // --- Actions ---
 
   const processFolderHandle = async (handle) => {
-    setRootHandle(handle)
-    setIsScanning(true)
-    setViewMode('folder')
+    console.log('=== processFolderHandle called ===')
+    console.log('Resetting all state for new folder:', handle.name)
+
+    // Reset everything FIRST
+    setRootHandle(null)  // Clear root first
     setFiles([])
     setProjectFiles([])
+    setViewMode('folder')
+    setIsScanning(true)
 
     // Reset Navigation
     setActiveFilter('all')
@@ -106,6 +112,9 @@ function App() {
     setSelectedFile(null)
     clearSelection()
 
+    // Now set the new root handle
+    setRootHandle(handle)
+
     // Bookmarks & Recent
     await checkCurrentBookmark(handle.name)
     await loadFolderBookmarks(handle.name)
@@ -115,7 +124,9 @@ function App() {
 
     // scanDirectory now handles state updates internally for progress
     try {
+      console.log('Starting scan for:', handle.name)
       await scanDirectory(handle)
+      console.log('Scan completed for:', handle.name)
     } catch (err) {
       console.error("Scan failed:", err)
       alert("Failed to scan directory. See console for details.")
@@ -135,12 +146,26 @@ function App() {
   }
 
   const handleFolderClick = async (handle) => {
-    const permission = await handle.queryPermission({ mode: 'read' })
-    if (permission !== 'granted') {
-      const request = await handle.requestPermission({ mode: 'read' })
-      if (request !== 'granted') return
+    try {
+      console.log('handleFolderClick called for:', handle.name)
+      const permission = await handle.queryPermission({ mode: 'read' })
+      console.log('Current permission:', permission)
+
+      if (permission !== 'granted') {
+        console.log('Requesting permission...')
+        const request = await handle.requestPermission({ mode: 'read' })
+        console.log('Permission request result:', request)
+        if (request !== 'granted') {
+          console.log('Permission denied by user')
+          return
+        }
+      }
+
+      await processFolderHandle(handle)
+    } catch (err) {
+      console.error('Error in handleFolderClick:', err)
+      alert('Could not access folder. Please try again or select the folder manually.')
     }
-    await processFolderHandle(handle)
   }
 
   const handleRecentView = async () => {
@@ -445,13 +470,15 @@ function App() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
         {/* Sidebar */}
         <FolderTree
+          key={rootHandle?.name || 'no-root'}
           files={projectFiles}
+          folders={folders} // Pass folders here
           currentPath={currentPath}
           onSelect={(path) => {
             setCurrentPath(path)
             setViewMode('folder')
             setFiles(projectFiles)
-            checkCurrentPathBookmark(rootHandle.name, path)
+            checkCurrentPathBookmark(rootHandle?.name, path)
           }}
           width={sidebarWidth}
           viewMode={viewMode}
@@ -475,7 +502,7 @@ function App() {
         />
 
         {/* Main Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 2rem', overflowY: 'auto' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 2rem', overflowY: 'auto', position: 'relative' }}>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
             {viewMode === 'folder' ? (
@@ -568,7 +595,31 @@ function App() {
           {/* Grid */}
           {isScanning ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
-              <div>Scanning...</div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                backgroundColor: 'var(--bg-secondary)',
+                padding: '0.5rem 1rem',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--accent-primary)',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                <div className="spinner" style={{
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid var(--text-secondary)',
+                  borderTopColor: 'var(--accent-primary)',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <span>Scanning...</span>
+                <style>{`
+                      @keyframes spin {
+                          to { transform: rotate(360deg); }
+                      }
+                  `}</style>
+              </div>
               <button
                 onClick={stopScan}
                 style={{
@@ -584,8 +635,25 @@ function App() {
               </button>
             </div>
           ) : filteredFiles.length === 0 ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)' }}>
-              No assets found.
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
+              <div>No assets found.</div>
+              <button
+                onClick={() => {
+                  if (currentPath) {
+                    refreshFolder(currentPath)
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--accent-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  cursor: 'pointer'
+                }}
+              >
+                Refresh Folder
+              </button>
             </div>
           ) : (
             <div className="grid-layout">

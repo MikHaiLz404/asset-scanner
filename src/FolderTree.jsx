@@ -1,14 +1,24 @@
 import React, { useState, useMemo } from 'react'
 
-// Helper to build tree from file list
-const buildFolderTree = (files) => {
+// Helper to build tree from file list or folder list
+const buildFolderTree = (items, isFolderList = false) => {
     const root = { name: 'Root', path: '', children: {} }
 
-    files.forEach(file => {
-        // file.path is like "folder/subfolder/file.ext"
-        // We want the directory part: "folder/subfolder"
-        const parts = file.path.split('/')
-        parts.pop() // Remove filename
+    console.log(`Building folder tree from ${items.length} ${isFolderList ? 'folders' : 'files'}`)
+
+    items.forEach(item => {
+        let parts
+        if (isFolderList) {
+            // item.path is "folder/subfolder"
+            parts = item.path.split('/')
+        } else {
+            // item.path is "folder/subfolder/file.ext"
+            // We want the directory part: "folder/subfolder"
+            parts = item.path.split('/')
+            parts.pop() // Remove filename
+        }
+
+        if (parts.length === 0 || (parts.length === 1 && parts[0] === '')) return
 
         let current = root
         let currentPath = ''
@@ -35,7 +45,9 @@ const buildFolderTree = (files) => {
         return { ...node, children }
     }
 
-    return convertToArray(root)
+    const result = convertToArray(root)
+    console.log(`Folder tree built with ${result.children.length} top-level folders:`, result.children.map(c => c.name))
+    return result
 }
 
 const TreeNode = ({ node, currentPath, onSelect, level = 0 }) => {
@@ -143,8 +155,13 @@ const TreeNode = ({ node, currentPath, onSelect, level = 0 }) => {
     )
 }
 
-export default function FolderTree({ files, currentPath, onSelect, width = 250, viewMode, onRecentClick, onCollectionsOverviewClick }) {
-    const tree = useMemo(() => buildFolderTree(files), [files])
+export default function FolderTree({ files, folders, currentPath, onSelect, width = 250, viewMode, onRecentClick, onCollectionsOverviewClick }) {
+    const tree = useMemo(() => {
+        if (folders && folders.length > 0) {
+            return buildFolderTree(folders, true)
+        }
+        return buildFolderTree(files, false)
+    }, [files, folders])
 
     return (
         <div style={{
@@ -242,7 +259,22 @@ export default function FolderTree({ files, currentPath, onSelect, width = 250, 
             }}>
                 Folders
             </div>
-            <TreeNode node={tree} currentPath={currentPath} onSelect={onSelect} />
+            {/* Render root's children directly, not the root node itself */}
+            {tree.children && tree.children.length > 0 ? (
+                tree.children.map(child => (
+                    <TreeNode
+                        key={child.path}
+                        node={child}
+                        currentPath={currentPath}
+                        onSelect={onSelect}
+                        level={0}
+                    />
+                ))
+            ) : (
+                <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                    No folders found
+                </div>
+            )}
         </div>
     )
 }
