@@ -240,7 +240,9 @@ export function useFileSystem() {
             // We pass the folderPath as the 'path' argument so yielded paths are correct
             for await (const entry of scanDirectoryGenerator(folder.handle, folderPath)) {
                 if (entry.kind === 'file') {
-                    newFiles.push(entry)
+                    if (entry.status === 'accepted') {
+                        newFiles.push(entry)
+                    }
                 } else if (entry.kind === 'directory') {
                     newFolders.push(entry)
                 }
