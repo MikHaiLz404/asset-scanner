@@ -411,17 +411,13 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                             {isModel && (
                                 <div style={{ width: '100%', height: '100%' }}>
                                     <ErrorBoundary>
-                                        <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 500], fov: 50, near: 0.1, far: 10000 }}>
-                                            <ambientLight intensity={1.5} />
-                                            <hemisphereLight skyColor={'#ffffff'} groundColor={'#444444'} intensity={1} />
-                                            <directionalLight position={[5, 10, 7]} intensity={1.5} castShadow />
-                                            <directionalLight position={[-5, 10, -7]} intensity={1.5} castShadow />
+                                        <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 10], fov: 50 }}>
                                             <Suspense fallback={null}>
-                                                <Bounds fit clip observe margin={1.2}>
-                                                    <Center>
+                                                <Stage environment="studio" intensity={7} adjustCamera={false} shadows={false}>
+                                                    <Bounds fit clip observe margin={2.5}>
                                                         <Model url={url} type={file.type} manager={manager} />
-                                                    </Center>
-                                                </Bounds>
+                                                    </Bounds>
+                                                </Stage>
                                             </Suspense>
                                             <OrbitControls makeDefault />
                                         </Canvas>
