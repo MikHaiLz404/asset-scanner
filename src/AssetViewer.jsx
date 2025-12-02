@@ -50,6 +50,7 @@ function Model({ url, type, manager }) {
 // Helper to apply default material if texture is missing
 const fixMaterials = (scene) => {
     if (!scene) return
+    console.log("--- fixMaterials starting ---")
     scene.traverse((child) => {
         if (child.isMesh) {
             // Ensure shadows
@@ -59,11 +60,36 @@ const fixMaterials = (scene) => {
             // If no map (texture), apply a nice default material
             // We check if the material has a map, or if it's an array of materials
             const mat = child.material
-            if (!mat) return
+            if (!mat) {
+                console.log(`Mesh '${child.name}': No material`)
+                return
+            }
 
             const hasMap = Array.isArray(mat) ? mat.some(m => m && m.map) : (mat && mat.map)
+            console.log(`Mesh '${child.name}': Material '${Array.isArray(mat) ? 'Multi' : mat.name}', hasMap: ${!!hasMap}`)
+
+            if (hasMap) {
+                // If it has a map, ensure it's set to needsUpdate and maybe check encoding
+                const sanitize = (m) => {
+                    if (m.map) m.map.colorSpace = THREE.SRGBColorSpace
+                    // Sanitize to prevent black models
+                    m.color.setHex(0xffffff) // Ensure white base
+                    m.vertexColors = false // Ignore vertex colors
+                    m.metalness = 0.1
+                    m.roughness = 0.5
+                    m.side = THREE.DoubleSide
+                    m.needsUpdate = true
+                }
+
+                if (Array.isArray(mat)) {
+                    mat.forEach(sanitize)
+                } else {
+                    sanitize(mat)
+                }
+            }
 
             if (!hasMap) {
+                console.log(`Mesh '${child.name}': Applying default material`)
                 // Create a default "Clay" material
                 const defaultMat = new THREE.MeshStandardMaterial({
                     color: 0xcccccc, // Light Grey
@@ -79,6 +105,7 @@ const fixMaterials = (scene) => {
             }
         }
     })
+    console.log("--- fixMaterials complete ---")
 }
 
 // Helper to create a 1x1 grey texture for fallback
@@ -168,7 +195,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
             // 1. Load the main model file
             const f = await file.handle.getFile()
             objectUrl = URL.createObjectURL(f)
-            setUrl(objectUrl)
+            // setUrl(objectUrl) // Delayed until manager is ready
             setLoadedFile(file) // Mark this file as loaded
             setMetadata({
                 size: f.size,
@@ -282,6 +309,8 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                     setManager(newManager)
                 }
             }
+
+            setUrl(objectUrl)
         }
         loadFile()
 
