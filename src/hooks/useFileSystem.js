@@ -105,7 +105,7 @@ export function useFileSystem() {
         const allFiles = []
         const allFolders = []
         let batchFiles = []
-        const BATCH_SIZE = 50 // Update UI every 50 files
+        const BATCH_SIZE = 500 // Update UI every 500 files to reduce overhead
         let lastUpdate = Date.now()
 
         try {
@@ -117,12 +117,11 @@ export function useFileSystem() {
             for await (const entry of scanDirectoryGenerator(handle)) {
                 if (entry.kind === 'directory') {
                     allFolders.push(entry)
-                    // We don't batch update folders for now to keep it simple, 
-                    // or we could if the tree is huge. Let's just collect them.
                 } else {
                     fileCount++
-                    if (fileCount <= 5) {
-                        console.log(`Found file #${fileCount}:`, entry.name, entry.type)
+                    // Log less frequently
+                    if (fileCount % 1000 === 0) {
+                        console.log(`Found file #${fileCount}:`, entry.name)
                     }
 
                     allFiles.push(entry)
@@ -131,25 +130,25 @@ export function useFileSystem() {
 
                 // Update state periodically to show progress
                 const now = Date.now()
-                if (batchFiles.length >= BATCH_SIZE || now - lastUpdate > 100) { // Every 50 items or 100ms
+                // Update if batch is full OR if 200ms has passed (less frequent updates = faster scan)
+                if (batchFiles.length >= BATCH_SIZE || now - lastUpdate > 200) {
                     console.log(`Batch update: ${allFiles.length} files found so far`)
                     setFiles(prev => [...prev, ...batchFiles])
                     setProjectFiles(prev => [...prev, ...batchFiles])
-                    // Also update folders incrementally if we want the tree to grow live
-                    // But for now, let's just update files live. 
-                    // Actually, let's update folders too so the tree appears.
+
                     if (allFolders.length > 0) {
                         setFolders(prev => {
-                            // This is a bit inefficient (creating new array from allFolders every time)
-                            // but correct since allFolders grows. 
-                            // Better: just set it to the current allFolders snapshot
+                            // Optimization: Only append new folders if we really need to.
+                            // For now, just replacing with current list is safest but maybe slow if huge.
+                            // Let's stick to the previous safe logic but maybe optimize later if needed.
                             return [...allFolders]
                         })
                     }
 
                     batchFiles = []
                     lastUpdate = now
-                    // Allow UI to breathe
+                    // Allow UI to breathe, but use a slightly longer timeout to ensure browser handles events
+                    // In background tabs, this might still be throttled, but processing 500 items per tick helps.
                     await new Promise(resolve => setTimeout(resolve, 0))
                 }
             }

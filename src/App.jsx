@@ -613,7 +613,7 @@ function App() {
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite'
                 }} />
-                <span>Scanning...</span>
+                <span>Scanning... ({files.length} files)</span>
                 <style>{`
                       @keyframes spin {
                           to { transform: rotate(360deg); }
