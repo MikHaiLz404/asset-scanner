@@ -8,6 +8,7 @@ export function useNavigation() {
 
     const [activeFilter, setActiveFilter] = useState('all') // 'all', 'model', 'image', 'audio', 'video'
     const [searchQuery, setSearchQuery] = useState('')
+    const [searchType, setSearchType] = useState('file') // 'file' or 'folder'
     const [sortBy, setSortBy] = useState('name-asc') // 'name-asc', 'name-desc', 'type'
     const [selectedTag, setSelectedTag] = useState('')
 
@@ -84,6 +85,8 @@ export function useNavigation() {
         setActiveFilter,
         searchQuery,
         setSearchQuery,
+        searchType,
+        setSearchType,
         sortBy,
         setSortBy,
         selectedTag,

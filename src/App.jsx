@@ -35,6 +35,7 @@ function App() {
     activeCollection, setActiveCollection,
     activeFilter, setActiveFilter,
     searchQuery, setSearchQuery,
+    searchType, setSearchType,
     sortBy, setSortBy,
     selectedTag, setSelectedTag,
     getFilteredFiles
@@ -369,8 +370,10 @@ function App() {
         onHome={handleHome}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        searchType={searchType}
+        onSearchTypeChange={setSearchType}
         onRecentClick={handleRecentView}
-        bookmarks={folderBookmarks}
+        bookmarks={bookmarkedFolders}
         onBookmarkClick={(bm) => {
           setCurrentPath(bm.path)
           setViewMode('folder')
@@ -625,7 +628,7 @@ function App() {
                 onClick={stopScan}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--bg-secondary)',
+                  backgroundColor: 'var(--bg-tertiary)',
                   border: '1px solid var(--border-color)',
                   borderRadius: 'var(--radius-md)',
                   color: 'var(--text-primary)',
@@ -635,76 +638,160 @@ function App() {
                 Stop Scan
               </button>
             </div>
-          ) : filteredFiles.length === 0 ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
-              <div>No assets found.</div>
-              <button
-                onClick={() => {
-                  if (currentPath) {
-                    refreshFolder(currentPath)
-                  }
-                }}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--bg-secondary)',
-                  border: '1px solid var(--accent-primary)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer'
-                }}
-              >
-                Refresh Folder
-              </button>
-            </div>
           ) : (
-            <div className="grid-layout">
-              {filteredFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="card"
-                  onClick={() => handleFileClick(file)}
-                  style={{
-                    position: 'relative',
-                    border: selectedFiles.has(file.id) ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)'
-                  }}
-                >
-                  {/* Selection Checkbox */}
-                  <div
-                    onClick={(e) => toggleSelection(e, file.id)}
+            <>
+              {/* Folder Search Logic */}
+              {searchType === 'folder' && searchQuery ? (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                  gap: '1.5rem',
+                  alignContent: 'start'
+                }}>
+                  {folders
+                    .filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(folder => (
+                      <div
+                        key={folder.path}
+                        onClick={() => {
+                          setCurrentPath(folder.path)
+                          setSearchQuery('') // Clear search on navigate
+                        }}
+                        style={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          borderRadius: 'var(--radius-md)',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          border: '1px solid var(--border-color)',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          aspectRatio: '1',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '1rem',
+                          textAlign: 'center'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-4px)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'
+                          e.currentTarget.style.borderColor = 'var(--accent-primary)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'none'
+                          e.currentTarget.style.boxShadow = 'none'
+                          e.currentTarget.style.borderColor = 'var(--border-color)'
+                        }}
+                      >
+                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📂</div>
+                        <div style={{ fontWeight: 500, wordBreak: 'break-word', fontSize: '0.9rem' }}>{folder.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', wordBreak: 'break-all' }}>
+                          {folder.path}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              ) : filteredFiles.length === 0 ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
+                  <div>No assets found.</div>
+                  <button
+                    onClick={() => {
+                      if (currentPath) {
+                        refreshFolder(currentPath)
+                      }
+                    }}
                     style={{
-                      position: 'absolute', top: '0.5rem', left: '0.5rem', zIndex: 10,
-                      width: '20px', height: '20px', borderRadius: '4px',
-                      backgroundColor: selectedFiles.has(file.id) ? 'var(--accent-primary)' : 'rgba(0,0,0,0.5)',
-                      border: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'white', fontSize: '0.875rem'
+                      padding: '0.5rem 1rem',
+                      backgroundColor: 'var(--bg-secondary)',
+                      border: '1px solid var(--accent-primary)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--text-primary)',
+                      cursor: 'pointer'
                     }}
                   >
-                    {selectedFiles.has(file.id) && '✓'}
-                  </div>
-
-                  <div className="card-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                    {IMAGE_EXTENSIONS.includes(file.type) ? (
-                      <LazyImage
-                        file={file}
-                        alt={file.name}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    ) : (
-                      <div className="icon" style={{ fontSize: '3rem' }}>
-                        {MODEL_EXTENSIONS.includes(file.type) ? '📦' :
-                          AUDIO_EXTENSIONS.includes(file.type) ? '🎵' :
-                            VIDEO_EXTENSIONS.includes(file.type) ? '🎬' : '📄'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="card-body">
-                    <div className="card-title" title={file.name}>{file.name}</div>
-                    <div className="card-subtitle">{file.type}</div>
-                  </div>
+                    Refresh Folder
+                  </button>
                 </div>
-              ))}
-            </div>
+              ) : (
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                  gap: '1.5rem',
+                  alignContent: 'start'
+                }}>
+                  {filteredFiles.map((file) => {
+                    const isSelected = selectedFiles.has(file.path)
+                    return (
+                      <div
+                        key={file.path}
+                        onClick={(e) => {
+                          if (e.ctrlKey || e.metaKey) {
+                            toggleSelection(file.path)
+                          } else {
+                            setSelectedFile(file)
+                          }
+                        }}
+                        style={{
+                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-secondary)',
+                          borderRadius: 'var(--radius-md)',
+                          overflow: 'hidden',
+                          cursor: 'pointer',
+                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
+                          transition: 'transform 0.2s, box-shadow 0.2s',
+                          aspectRatio: '1',
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.transform = 'translateY(-4px)'
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.currentTarget.style.transform = 'none'
+                            e.currentTarget.style.boxShadow = 'none'
+                          }
+                        }}
+                      >
+                        {/* Thumbnail */}
+                        <div style={{ flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {IMAGE_EXTENSIONS.includes(file.type) ? (
+                            <LazyImage file={file} />
+                          ) : (
+                            <div style={{ fontSize: '3rem' }}>
+                              {MODEL_EXTENSIONS.includes(file.type) ? '📦' :
+                                AUDIO_EXTENSIONS.includes(file.type) ? '🎵' :
+                                  VIDEO_EXTENSIONS.includes(file.type) ? '🎬' : '📄'}
+                            </div>
+                          )}
+                          {/* Type Badge */}
+                          <div style={{
+                            position: 'absolute', top: '0.5rem', right: '0.5rem',
+                            backgroundColor: 'rgba(0,0,0,0.7)', color: 'white',
+                            padding: '0.25rem 0.5rem', borderRadius: '4px',
+                            fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase'
+                          }}>
+                            {file.type.replace('.', '')}
+                          </div>
+                        </div>
+
+                        {/* Info */}
+                        <div style={{ padding: '0.75rem' }}>
+                          <div style={{
+                            fontWeight: 500, marginBottom: '0.25rem',
+                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                          }} title={file.name}>
+                            {file.name}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
