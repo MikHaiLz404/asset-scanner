@@ -155,7 +155,7 @@ const TreeNode = ({ node, currentPath, onSelect, level = 0 }) => {
     )
 }
 
-export default function FolderTree({ files, folders, currentPath, onSelect, width = 250, viewMode, onRecentClick, onCollectionsOverviewClick }) {
+export default function FolderTree({ files, folders, currentPath, onSelect, width = 250 }) {
     const tree = useMemo(() => {
         if (folders && folders.length > 0) {
             return buildFolderTree(folders, true)
@@ -175,79 +175,6 @@ export default function FolderTree({ files, folders, currentPath, onSelect, widt
             flexDirection: 'column',
             gap: '0.5rem'
         }}>
-            <div style={{
-                fontSize: '0.75rem',
-                textTransform: 'uppercase',
-                color: 'var(--text-secondary)',
-                fontWeight: 'bold',
-                marginBottom: '0.5rem',
-                letterSpacing: '0.05em'
-            }}>
-                Navigation
-            </div>
-
-            {/* Recent Node */}
-            <div
-                onClick={onRecentClick}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.25rem 0.5rem',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    backgroundColor: viewMode === 'recent' ? 'var(--accent-primary)' : 'transparent',
-                    color: viewMode === 'recent' ? 'var(--bg-primary)' : 'var(--text-secondary)',
-                    marginBottom: '0.5rem',
-                    transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                    if (viewMode !== 'recent') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'
-                        e.currentTarget.style.color = 'var(--text-primary)'
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    if (viewMode !== 'recent') {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                        e.currentTarget.style.color = 'var(--text-secondary)'
-                    }
-                }}
-            >
-                <span style={{ marginRight: '0.5rem' }}>🕒</span>
-                <span>Recent Files</span>
-            </div>
-
-            {/* Collections Section */}
-            <div
-                onClick={onCollectionsOverviewClick}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.25rem 0.5rem',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    backgroundColor: (viewMode === 'collections-overview' || viewMode === 'collection') ? 'var(--accent-primary)' : 'transparent',
-                    color: (viewMode === 'collections-overview' || viewMode === 'collection') ? 'var(--bg-primary)' : 'var(--text-secondary)',
-                    marginBottom: '0.5rem',
-                    transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                    if (viewMode !== 'collections-overview' && viewMode !== 'collection') {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'
-                        e.currentTarget.style.color = 'var(--text-primary)'
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    if (viewMode !== 'collections-overview' && viewMode !== 'collection') {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                        e.currentTarget.style.color = 'var(--text-secondary)'
-                    }
-                }}
-            >
-                <span style={{ marginRight: '0.5rem' }}>🏷️</span>
-                <span>Collections</span>
-            </div>
-
             <div style={{
                 fontSize: '0.75rem',
                 textTransform: 'uppercase',

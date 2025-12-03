@@ -10,10 +10,13 @@ export default function NavBar({
     onRecentClick,
     bookmarks,
     onBookmarkClick,
+    folderBookmarks,
+    onFolderBookmarkClick,
     tags,
     onTagClick
 }) {
     const [showBookmarks, setShowBookmarks] = useState(false)
+    const [showFavorites, setShowFavorites] = useState(false)
     const [showCollections, setShowCollections] = useState(false)
 
     return (
@@ -120,10 +123,10 @@ export default function NavBar({
                     🕒 Recent
                 </button>
 
-                {/* Bookmarks Dropdown */}
+                {/* Saved Projects Dropdown */}
                 <div style={{ position: 'relative' }}>
                     <button
-                        onClick={() => { setShowBookmarks(!showBookmarks); setShowCollections(false); }}
+                        onClick={() => { setShowBookmarks(!showBookmarks); setShowCollections(false); setShowFavorites(false); }}
                         style={{
                             background: 'none',
                             border: 'none',
@@ -140,7 +143,7 @@ export default function NavBar({
                         onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
                         onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
                     >
-                        ⭐ Bookmarks ▾
+                        📂 Saved Projects ▾
                     </button>
                     {showBookmarks && (
                         <>
@@ -165,7 +168,7 @@ export default function NavBar({
                             }}>
                                 {bookmarks.length === 0 ? (
                                     <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
-                                        No bookmarks yet
+                                        No saved projects
                                     </div>
                                 ) : (
                                     bookmarks.map(b => (
@@ -198,10 +201,88 @@ export default function NavBar({
                     )}
                 </div>
 
+                {/* Favorites Dropdown */}
+                <div style={{ position: 'relative' }}>
+                    <button
+                        onClick={() => { setShowFavorites(!showFavorites); setShowBookmarks(false); setShowCollections(false); }}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            fontSize: '0.875rem',
+                            fontWeight: 500,
+                            padding: '0.5rem',
+                            borderRadius: 'var(--radius-md)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.25rem'
+                        }}
+                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
+                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                    >
+                        ⭐ Favorites ▾
+                    </button>
+                    {showFavorites && (
+                        <>
+                            <div
+                                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }}
+                                onClick={() => setShowFavorites(false)}
+                            />
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                marginTop: '0.5rem',
+                                width: '250px',
+                                backgroundColor: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
+                                borderRadius: 'var(--radius-md)',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+                                zIndex: 100,
+                                maxHeight: '300px',
+                                overflowY: 'auto',
+                                padding: '0.5rem'
+                            }}>
+                                {(!folderBookmarks || folderBookmarks.length === 0) ? (
+                                    <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                                        No favorites yet
+                                    </div>
+                                ) : (
+                                    folderBookmarks.map(b => (
+                                        <button
+                                            key={b.id}
+                                            onClick={() => { onFolderBookmarkClick(b); setShowFavorites(false); }}
+                                            style={{
+                                                width: '100%',
+                                                textAlign: 'left',
+                                                padding: '0.5rem',
+                                                background: 'none',
+                                                border: 'none',
+                                                color: 'var(--text-primary)',
+                                                cursor: 'pointer',
+                                                borderRadius: 'var(--radius-sm)',
+                                                fontSize: '0.875rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '0.5rem'
+                                            }}
+                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
+                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        >
+                                            <span>⭐</span> {b.name}
+                                        </button>
+                                    ))
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+
                 {/* Collections Dropdown */}
                 <div style={{ position: 'relative' }}>
                     <button
-                        onClick={() => { setShowCollections(!showCollections); setShowBookmarks(false); }}
+                        onClick={() => { setShowCollections(!showCollections); setShowBookmarks(false); setShowFavorites(false); }}
                         style={{
                             background: 'none',
                             border: 'none',
