@@ -45,13 +45,15 @@ export const getRecentFolders = async () => {
 }
 
 // Recent Files Functions
-export const saveRecentFile = async (file) => {
+// Recent Files Functions
+export const saveRecentFile = async (file, rootName) => {
     const db = await initDB()
     await db.put(RECENT_FILES_STORE, {
         path: file.path,
         name: file.name,
         type: file.type,
         handle: file.handle,
+        rootName: rootName, // Store rootName
         lastOpened: new Date().getTime()
     })
 
@@ -69,10 +71,12 @@ export const saveRecentFile = async (file) => {
     }
 }
 
-export const getRecentFiles = async () => {
+export const getRecentFiles = async (rootName) => {
     const db = await initDB()
     const files = await db.getAll(RECENT_FILES_STORE)
-    return files.sort((a, b) => b.lastOpened - a.lastOpened)
+    // Filter by rootName if provided
+    const filtered = rootName ? files.filter(f => f.rootName === rootName) : files
+    return filtered.sort((a, b) => b.lastOpened - a.lastOpened)
 }
 
 // Folder Bookmark Functions (Deep Links)

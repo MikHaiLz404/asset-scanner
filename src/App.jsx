@@ -173,7 +173,7 @@ function App() {
   const handleRecentView = async () => {
     setIsScanning(true)
     try {
-      const recentFiles = await getRecentFiles()
+      const recentFiles = await getRecentFiles(rootHandle?.name)
       setFiles(recentFiles)
       setViewMode('recent')
       setCurrentPath('')
@@ -244,7 +244,7 @@ function App() {
     setSelectedFile(file)
     // Only save to recent files if the file has a valid handle
     if (file && file.handle && file.path) {
-      saveRecentFile(file)
+      saveRecentFile(file, rootHandle?.name || file.rootName)
     }
   }
 
@@ -313,6 +313,8 @@ function App() {
             </div>
           )}
 
+
+
           {/* Recent Section */}
           {recentFolders.length > 0 && (
             <div>
@@ -375,6 +377,15 @@ function App() {
         onRecentClick={handleRecentView}
         bookmarks={bookmarkedFolders}
         onBookmarkClick={(bm) => {
+          if (bm.handle) {
+            processFolderHandle(bm.handle)
+          } else {
+            console.error("Bookmark has no handle:", bm)
+            alert("This bookmark is invalid or missing permission.")
+          }
+        }}
+        folderBookmarks={folderBookmarks}
+        onFolderBookmarkClick={(bm) => {
           setCurrentPath(bm.path)
           setViewMode('folder')
           checkCurrentPathBookmark(rootHandle.name, bm.path)
@@ -485,12 +496,6 @@ function App() {
             checkCurrentPathBookmark(rootHandle?.name, path)
           }}
           width={sidebarWidth}
-          viewMode={viewMode}
-          onRecentClick={handleRecentView}
-          tags={uniqueTags}
-          onCollectionClick={handleCollectionClick}
-          activeCollection={activeCollection}
-          onCollectionsOverviewClick={handleCollectionsOverviewClick}
         />
 
         {/* Resizer Handle */}
