@@ -731,7 +731,7 @@ function App() {
                         key={file.path}
                         onClick={(e) => {
                           if (e.ctrlKey || e.metaKey) {
-                            toggleSelection(file.path)
+                            toggleSelection(e, file.path)
                           } else {
                             setSelectedFile(file)
                           }
@@ -745,7 +745,8 @@ function App() {
                           transition: 'transform 0.2s, box-shadow 0.2s',
                           aspectRatio: '1',
                           display: 'flex',
-                          flexDirection: 'column'
+                          flexDirection: 'column',
+                          position: 'relative' // Ensure relative positioning for absolute children
                         }}
                         onMouseEnter={(e) => {
                           if (!isSelected) {
@@ -760,6 +761,30 @@ function App() {
                           }
                         }}
                       >
+                        {/* Selection Checkbox */}
+                        <div
+                          onClick={(e) => toggleSelection(e, file.path)}
+                          style={{
+                            position: 'absolute',
+                            top: '0.5rem',
+                            left: '0.5rem',
+                            zIndex: 10,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => { }} // Handled by div onClick to capture bubbling or specific handler
+                            style={{
+                              width: '1.25rem',
+                              height: '1.25rem',
+                              cursor: 'pointer',
+                              accentColor: 'var(--accent-primary)'
+                            }}
+                          />
+                        </div>
+
                         {/* Thumbnail */}
                         <div style={{ flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {IMAGE_EXTENSIONS.includes(file.type) ? (
