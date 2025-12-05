@@ -329,6 +329,7 @@ function App() {
   return (
     <div className="app-container">
       {selectedFile && (
+        console.log('[Debug] App.jsx passing projectFiles to AssetViewer:', projectFiles.length),
         <AssetViewer
           file={selectedFile}
           onClose={handleViewerClose}
