@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import './styles/NavBar.css'
 
 export default function NavBar({
     title,
@@ -20,61 +21,28 @@ export default function NavBar({
     const [showCollections, setShowCollections] = useState(false)
 
     return (
-        <nav style={{
-            height: 'auto',
-            minHeight: '60px',
-            backgroundColor: 'var(--bg-secondary)',
-            borderBottom: '1px solid var(--border-color)',
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0.5rem 1.5rem',
-            gap: '1.5rem',
-            position: 'sticky',
-            top: 0,
-            zIndex: 100
-        }}>
+        <nav className="navbar-container">
             {/* Left: Logo/Home */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '200px' }}>
+            <div className="navbar-left">
                 <button
                     onClick={onHome}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        fontSize: '1.5rem',
-                        cursor: 'pointer',
-                        padding: '0.25rem',
-                        borderRadius: 'var(--radius-md)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        transition: 'background-color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    className="home-button"
                     title="Home"
                 >
                     🏠
                 </button>
-                <h1 style={{ fontSize: '1.125rem', fontWeight: 600, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <h1 className="app-title">
                     {title || 'Asset Scanner'}
                 </h1>
             </div>
 
             {/* Center: Search */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                <div style={{ display: 'flex', width: '100%', justifyContent: 'center', gap: '0.5rem' }}>
+            <div className="navbar-center">
+                <div className="search-container">
                     <select
                         value={searchType}
                         onChange={(e) => onSearchTypeChange(e.target.value)}
-                        style={{
-                            padding: '0 1rem',
-                            borderRadius: 'var(--radius-md)',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.875rem',
-                            outline: 'none',
-                            cursor: 'pointer'
-                        }}
+                        className="search-type-select"
                     >
                         <option value="file">File</option>
                         <option value="folder">Folder</option>
@@ -84,90 +52,40 @@ export default function NavBar({
                         placeholder={searchType === 'folder' ? "Search folders..." : "Search assets..."}
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        style={{
-                            width: '100%',
-                            maxWidth: '500px',
-                            padding: '0.5rem 1rem',
-                            borderRadius: 'var(--radius-md)',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            fontSize: '0.875rem',
-                            outline: 'none'
-                        }}
+                        className="search-input"
                     />
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>
+                <div className="search-tip">
                     💡 Tip: For the best FBX experience, please refresh textures before opening the file.
                 </div>
             </div>
 
             {/* Right: Menus */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', minWidth: '200px', justifyContent: 'flex-end' }}>
+            <div className="navbar-right">
                 <button
                     onClick={onRecentClick}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        color: 'var(--text-secondary)',
-                        cursor: 'pointer',
-                        fontSize: '0.875rem',
-                        fontWeight: 500,
-                        padding: '0.5rem',
-                        borderRadius: 'var(--radius-md)',
-                        transition: 'color 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
-                    onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                    className="nav-menu-button"
                 >
                     🕒 Recent
                 </button>
 
                 {/* Saved Projects Dropdown */}
-                <div style={{ position: 'relative' }}>
+                <div className="dropdown-container">
                     <button
                         onClick={() => { setShowBookmarks(!showBookmarks); setShowCollections(false); setShowFavorites(false); }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            padding: '0.5rem',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem'
-                        }}
-                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
-                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                        className="nav-menu-button"
                     >
                         📂 Saved Projects ▾
                     </button>
                     {showBookmarks && (
                         <>
                             <div
-                                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }}
+                                className="dropdown-overlay"
                                 onClick={() => setShowBookmarks(false)}
                             />
-                            <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                right: 0,
-                                marginTop: '0.5rem',
-                                width: '250px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-                                zIndex: 100,
-                                maxHeight: '300px',
-                                overflowY: 'auto',
-                                padding: '0.5rem'
-                            }}>
+                            <div className="dropdown-menu">
                                 {bookmarks.length === 0 ? (
-                                    <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                                    <div className="empty-dropdown-message">
                                         No saved projects
                                     </div>
                                 ) : (
@@ -175,22 +93,7 @@ export default function NavBar({
                                         <button
                                             key={b.name}
                                             onClick={() => { onBookmarkClick(b); setShowBookmarks(false); }}
-                                            style={{
-                                                width: '100%',
-                                                textAlign: 'left',
-                                                padding: '0.5rem',
-                                                background: 'none',
-                                                border: 'none',
-                                                color: 'var(--text-primary)',
-                                                cursor: 'pointer',
-                                                borderRadius: 'var(--radius-sm)',
-                                                fontSize: '0.875rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem'
-                                            }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            className="dropdown-item"
                                         >
                                             <span>📂</span> {b.name}
                                         </button>
@@ -202,50 +105,22 @@ export default function NavBar({
                 </div>
 
                 {/* Favorites Dropdown */}
-                <div style={{ position: 'relative' }}>
+                <div className="dropdown-container">
                     <button
                         onClick={() => { setShowFavorites(!showFavorites); setShowBookmarks(false); setShowCollections(false); }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            padding: '0.5rem',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem'
-                        }}
-                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
-                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                        className="nav-menu-button"
                     >
                         ⭐ Favorites ▾
                     </button>
                     {showFavorites && (
                         <>
                             <div
-                                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }}
+                                className="dropdown-overlay"
                                 onClick={() => setShowFavorites(false)}
                             />
-                            <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                right: 0,
-                                marginTop: '0.5rem',
-                                width: '250px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-                                zIndex: 100,
-                                maxHeight: '300px',
-                                overflowY: 'auto',
-                                padding: '0.5rem'
-                            }}>
+                            <div className="dropdown-menu">
                                 {(!folderBookmarks || folderBookmarks.length === 0) ? (
-                                    <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                                    <div className="empty-dropdown-message">
                                         No favorites yet
                                     </div>
                                 ) : (
@@ -253,22 +128,7 @@ export default function NavBar({
                                         <button
                                             key={b.id}
                                             onClick={() => { onFolderBookmarkClick(b); setShowFavorites(false); }}
-                                            style={{
-                                                width: '100%',
-                                                textAlign: 'left',
-                                                padding: '0.5rem',
-                                                background: 'none',
-                                                border: 'none',
-                                                color: 'var(--text-primary)',
-                                                cursor: 'pointer',
-                                                borderRadius: 'var(--radius-sm)',
-                                                fontSize: '0.875rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem'
-                                            }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            className="dropdown-item"
                                         >
                                             <span>⭐</span> {b.name}
                                         </button>
@@ -280,50 +140,22 @@ export default function NavBar({
                 </div>
 
                 {/* Collections Dropdown */}
-                <div style={{ position: 'relative' }}>
+                <div className="dropdown-container">
                     <button
                         onClick={() => { setShowCollections(!showCollections); setShowBookmarks(false); setShowFavorites(false); }}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            fontSize: '0.875rem',
-                            fontWeight: 500,
-                            padding: '0.5rem',
-                            borderRadius: 'var(--radius-md)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.25rem'
-                        }}
-                        onMouseEnter={(e) => e.target.style.color = 'var(--text-primary)'}
-                        onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}
+                        className="nav-menu-button"
                     >
                         🏷️ Collections ▾
                     </button>
                     {showCollections && (
                         <>
                             <div
-                                style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 90 }}
+                                className="dropdown-overlay"
                                 onClick={() => setShowCollections(false)}
                             />
-                            <div style={{
-                                position: 'absolute',
-                                top: '100%',
-                                right: 0,
-                                marginTop: '0.5rem',
-                                width: '250px',
-                                backgroundColor: 'var(--bg-secondary)',
-                                border: '1px solid var(--border-color)',
-                                borderRadius: 'var(--radius-md)',
-                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
-                                zIndex: 100,
-                                maxHeight: '300px',
-                                overflowY: 'auto',
-                                padding: '0.5rem'
-                            }}>
+                            <div className="dropdown-menu">
                                 {tags.length === 0 ? (
-                                    <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+                                    <div className="empty-dropdown-message">
                                         No tags created
                                     </div>
                                 ) : (
@@ -331,22 +163,7 @@ export default function NavBar({
                                         <button
                                             key={t}
                                             onClick={() => { onTagClick(t); setShowCollections(false); }}
-                                            style={{
-                                                width: '100%',
-                                                textAlign: 'left',
-                                                padding: '0.5rem',
-                                                background: 'none',
-                                                border: 'none',
-                                                color: 'var(--text-primary)',
-                                                cursor: 'pointer',
-                                                borderRadius: 'var(--radius-sm)',
-                                                fontSize: '0.875rem',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '0.5rem'
-                                            }}
-                                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'}
-                                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            className="dropdown-item"
                                         >
                                             <span>🏷️</span> {t}
                                         </button>

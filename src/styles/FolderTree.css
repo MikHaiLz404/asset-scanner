@@ -1,0 +1,81 @@
+/* Folder Tree Container */
+.folder-tree-container {
+    border-right: 1px solid var(--border-color);
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.folder-tree-header {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    margin-top: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.no-folders-message {
+    padding: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Tree Node */
+.tree-node-wrapper {
+    /* Padding left is handled dynamically via inline style or prop */
+}
+
+.tree-node-content {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    background-color: transparent;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+    transition: all 0.2s;
+}
+
+.tree-node-content:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.tree-node-content.active {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+/* Override hover for active state to maintain active appearance */
+.tree-node-content.active:hover {
+    background-color: var(--accent-primary);
+    color: var(--bg-primary);
+}
+
+.tree-toggle-icon {
+    margin-right: 0.5rem;
+    font-size: 0.75rem;
+    width: 1rem;
+    display: inline-block;
+    text-align: center;
+}
+
+.tree-spacer {
+    width: 1.5rem;
+}
+
+.tree-folder-icon {
+    margin-right: 0.5rem;
+}
+
+.tree-node-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

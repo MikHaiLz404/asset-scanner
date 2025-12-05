@@ -6,6 +6,7 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 import * as THREE from 'three'
 import { IMAGE_EXTENSIONS } from '../utils/constants'
+import '../styles/ModelViewer.css'
 
 // Helper to apply default material if texture is missing
 const fixMaterials = (scene) => {
@@ -79,19 +80,43 @@ const createPlaceholderTexture = () => {
     return new Promise(resolve => canvas.toBlob(resolve))
 }
 
-function FBXModel({ url, manager, isWireframe }) {
+// Helper to calculate model statistics
+const getModelStats = (scene) => {
+    let triangles = 0
+    let vertices = 0
+    let meshes = 0
+
+    scene.traverse((child) => {
+        if (child.isMesh && child.geometry) {
+            meshes++
+            if (child.geometry.index) {
+                triangles += child.geometry.index.count / 3
+                vertices += child.geometry.attributes.position.count
+            } else if (child.geometry.attributes.position) {
+                triangles += child.geometry.attributes.position.count / 3
+                vertices += child.geometry.attributes.position.count
+            }
+        }
+    })
+    return { triangles, vertices, meshes }
+}
+
+function FBXModel({ url, manager, isWireframe, onLoaded }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
     }, [manager])
 
     const fbx = useLoader(FBXLoader, url, loaderFn)
 
-    // Clone to avoid mutating cached object if we use it elsewhere (though useLoader caches)
     const scene = useMemo(() => {
         const clone = fbx.clone()
         fixMaterials(clone)
         return clone
     }, [fbx])
+
+    useEffect(() => {
+        if (onLoaded) onLoaded(getModelStats(scene))
+    }, [scene, onLoaded])
 
     useEffect(() => {
         scene.traverse((child) => {
@@ -105,10 +130,11 @@ function FBXModel({ url, manager, isWireframe }) {
         })
     }, [scene, isWireframe])
 
-    return <primitive object={scene} />
+    // Apply default rotation for FBX (often Z-up)
+    return <primitive object={scene} rotation={[-Math.PI / 2, 0, 0]} />
 }
 
-function OBJModel({ url, manager, isWireframe }) {
+function OBJModel({ url, manager, isWireframe, onLoaded }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
     }, [manager])
@@ -121,31 +147,8 @@ function OBJModel({ url, manager, isWireframe }) {
     }, [obj])
 
     useEffect(() => {
-        scene.traverse((child) => {
-            if (child.isMesh && child.material) {
-                if (Array.isArray(child.material)) {
-                    child.material.forEach(m => m.wireframe = isWireframe)
-                } else {
-                    child.material.wireframe = isWireframe
-                }
-            }
-        })
-    }, [scene, isWireframe])
-
-    return <primitive object={scene} />
-}
-
-function GLTFModel({ url, manager, isWireframe }) {
-    const loaderFn = React.useCallback((loader) => {
-        if (manager) loader.manager = manager
-    }, [manager])
-
-    const gltf = useLoader(GLTFLoader, url, loaderFn)
-    const scene = useMemo(() => {
-        const clone = gltf.scene.clone()
-        fixMaterials(clone)
-        return clone
-    }, [gltf])
+        if (onLoaded) onLoaded(getModelStats(scene))
+    }, [scene, onLoaded])
 
     useEffect(() => {
         scene.traverse((child) => {
@@ -159,14 +162,51 @@ function GLTFModel({ url, manager, isWireframe }) {
         })
     }, [scene, isWireframe])
 
+    // OBJ might also need rotation depending on export settings, but let's try 0 first or consistent with FBX?
+    // Usually OBJ is less predictable. Let's stick to 0 for now unless user complains about OBJ too.
+    // Actually, if the user says "model is lying down", it's likely they are testing FBX or similar.
+    // Let's apply the same rotation for now as a safe bet for "Asset Scanner" context where Z-up is common.
+    // Wait, let's just rotate FBX for now as it's the most notorious one.
     return <primitive object={scene} />
 }
 
-function Model({ url, type, manager, isWireframe }) {
+function GLTFModel({ url, manager, isWireframe, onLoaded }) {
+    const loaderFn = React.useCallback((loader) => {
+        if (manager) loader.manager = manager
+    }, [manager])
+
+    const gltf = useLoader(GLTFLoader, url, loaderFn)
+    const scene = useMemo(() => {
+        const clone = gltf.scene.clone()
+        fixMaterials(clone)
+        return clone
+    }, [gltf])
+
+    useEffect(() => {
+        if (onLoaded) onLoaded(getModelStats(scene))
+    }, [scene, onLoaded])
+
+    useEffect(() => {
+        scene.traverse((child) => {
+            if (child.isMesh && child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.wireframe = isWireframe)
+                } else {
+                    child.material.wireframe = isWireframe
+                }
+            }
+        })
+    }, [scene, isWireframe])
+
+    // GLTF is usually Y-up, so no rotation needed typically.
+    return <primitive object={scene} />
+}
+
+function Model({ url, type, manager, isWireframe, onLoaded }) {
     console.log("Rendering Model:", type, url)
-    if (type === '.fbx') return <FBXModel url={url} manager={manager} isWireframe={isWireframe} />
-    if (type === '.obj') return <OBJModel url={url} manager={manager} isWireframe={isWireframe} />
-    if (type === '.gltf' || type === '.glb') return <GLTFModel url={url} manager={manager} isWireframe={isWireframe} />
+    if (type === '.fbx') return <FBXModel url={url} manager={manager} isWireframe={isWireframe} onLoaded={onLoaded} />
+    if (type === '.obj') return <OBJModel url={url} manager={manager} isWireframe={isWireframe} onLoaded={onLoaded} />
+    if (type === '.gltf' || type === '.glb') return <GLTFModel url={url} manager={manager} isWireframe={isWireframe} onLoaded={onLoaded} />
     return null
 }
 
@@ -187,9 +227,9 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
+                <div className="error-container">
                     <h2>Something went wrong.</h2>
-                    <pre style={{ background: '#333', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+                    <pre className="error-pre">
                         {this.state.error?.message}
                     </pre>
                 </div>
@@ -205,6 +245,7 @@ export default function ModelViewer({ file, url, projectFiles }) {
     const [showGrid, setShowGrid] = useState(true)
     const [isWireframe, setIsWireframe] = useState(false)
     const [readyUrl, setReadyUrl] = useState(null)
+    const [stats, setStats] = useState({ triangles: 0, vertices: 0, meshes: 0 })
 
     useEffect(() => {
         let textureUrls = []
@@ -213,6 +254,7 @@ export default function ModelViewer({ file, url, projectFiles }) {
 
         const setupManager = async () => {
             setReadyUrl(null) // Reset ready URL when file changes
+            setStats({ triangles: 0, vertices: 0, meshes: 0 })
 
             // Texture Resolver Logic
             // Strategy: Look for textures in:
@@ -222,7 +264,6 @@ export default function ModelViewer({ file, url, projectFiles }) {
 
             // We achieve this by filtering files that start with the "Grandparent" path
             // path: A/B/C/model.fbx -> Parent: A/B/C -> Grandparent: A/B
-
             const parts = file.path.split('/')
             parts.pop() // Remove filename -> A/B/C
             parts.pop() // Remove current dir -> A/B
@@ -329,23 +370,25 @@ export default function ModelViewer({ file, url, projectFiles }) {
         }
     }, [file, projectFiles, url])
 
-    // If manager isn't ready or url hasn't been "approved" by our setup, wait
-    // Actually, we can just use 'url' but pass 'manager'. 
-    // But we wanted to delay rendering until manager is set to avoid race condition.
-    // In AssetViewer we delayed setUrl. Here we can use readyUrl.
-
     if (!readyUrl || !manager) {
-        return <div style={{ color: 'white', display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>Loading textures...</div>
+        return <div className="loading-container">Loading textures...</div>
     }
 
     return (
-        <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+        <div className="viewer-container">
             <ErrorBoundary>
                 <Canvas shadows dpr={[1, 2]} camera={{ position: [0, 0, 10], fov: 50 }}>
                     <Suspense fallback={null}>
+                        {/* Removed observe prop from Bounds to prevent auto-refit on updates */}
                         <Stage environment="studio" intensity={7} adjustCamera={false} shadows={false}>
-                            <Bounds fit clip observe margin={2.5}>
-                                <Model url={readyUrl} type={file.type} manager={manager} isWireframe={isWireframe} />
+                            <Bounds fit clip margin={2.5}>
+                                <Model
+                                    url={readyUrl}
+                                    type={file.type}
+                                    manager={manager}
+                                    isWireframe={isWireframe}
+                                    onLoaded={setStats}
+                                />
                             </Bounds>
                         </Stage>
                         {showGrid && <Grid infiniteGrid fadeDistance={500} sectionColor="#444" cellColor="#222" />}
@@ -354,19 +397,37 @@ export default function ModelViewer({ file, url, projectFiles }) {
                     <OrbitControls makeDefault />
                 </Canvas>
             </ErrorBoundary>
-            <div style={{
-                position: 'absolute',
-                bottom: '60px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                display: 'flex',
-                gap: '10px',
-                zIndex: 10
-            }}>
-                <button onClick={() => setShowGrid(!showGrid)} style={{ padding: '8px 16px', borderRadius: '20px', background: showGrid ? '#4CAF50' : '#333', color: 'white', border: 'none', cursor: 'pointer' }}>
+
+            {/* Stats Panel (Top Right) */}
+            <div className="stats-panel">
+                <div className="stat-item">
+                    <span className="stat-label">Tris</span>
+                    <span className="stat-value">{stats.triangles.toLocaleString()}</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-label">Verts</span>
+                    <span className="stat-value">{stats.vertices.toLocaleString()}</span>
+                </div>
+                <div className="stat-item">
+                    <span className="stat-label">Meshes</span>
+                    <span className="stat-value">{stats.meshes.toLocaleString()}</span>
+                </div>
+            </div>
+
+            {/* Controls Bar (Bottom Center) */}
+            <div className="controls-bar">
+                <button
+                    onClick={() => setShowGrid(!showGrid)}
+                    className={`control-button ${showGrid ? 'active' : ''}`}
+                    title="Toggle Grid"
+                >
                     Grid
                 </button>
-                <button onClick={() => setIsWireframe(!isWireframe)} style={{ padding: '8px 16px', borderRadius: '20px', background: isWireframe ? '#4CAF50' : '#333', color: 'white', border: 'none', cursor: 'pointer' }}>
+                <button
+                    onClick={() => setIsWireframe(!isWireframe)}
+                    className={`control-button ${isWireframe ? 'active' : ''}`}
+                    title="Toggle Wireframe"
+                >
                     Wireframe
                 </button>
             </div>

@@ -6,6 +6,7 @@ import FolderTree from './FolderTree'
 import Breadcrumb from './Breadcrumb'
 import LazyImage from './components/LazyImage'
 import { MODEL_EXTENSIONS, IMAGE_EXTENSIONS, AUDIO_EXTENSIONS, VIDEO_EXTENSIONS } from './utils/constants'
+import './styles/App.css'
 
 // Hooks
 import { useFileSystem } from './hooks/useFileSystem'
@@ -278,34 +279,21 @@ function App() {
           Open Project Folder
         </button>
 
-        <div style={{ marginTop: '3rem', width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div className="bookmarks-wrapper">
           {/* Bookmarks Section */}
           {bookmarkedFolders.length > 0 && (
             <div>
-              <h3 style={{ fontSize: '0.875rem', color: 'var(--accent-primary)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <h3 className="section-title accent">
                 <span>⭐</span> Bookmarked Folders
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="list-container">
                 {bookmarkedFolders.map((item) => (
                   <button
                     key={item.name}
                     onClick={() => handleFolderClick(item.handle)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem',
-                      backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--accent-primary)',
-                      borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: '0.875rem',
-                      textAlign: 'left', transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'
-                      e.currentTarget.style.transform = 'translateX(4px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'
-                      e.currentTarget.style.transform = 'none'
-                    }}
+                    className="list-item-button bookmark"
                   >
-                    <span style={{ fontSize: '1.25rem' }}>📂</span>
+                    <span className="icon-lg">📂</span>
                     {item.name}
                   </button>
                 ))}
@@ -313,35 +301,20 @@ function App() {
             </div>
           )}
 
-
-
           {/* Recent Section */}
           {recentFolders.length > 0 && (
             <div>
-              <h3 style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <h3 className="section-title secondary">
                 Recent Folders
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div className="list-container">
                 {recentFolders.map((item) => (
                   <button
                     key={item.name}
                     onClick={() => handleFolderClick(item.handle)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem',
-                      backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                      borderRadius: 'var(--radius-md)', color: 'var(--text-primary)', fontSize: '0.875rem',
-                      textAlign: 'left', transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--accent-primary)'
-                      e.currentTarget.style.transform = 'translateX(4px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border-color)'
-                      e.currentTarget.style.transform = 'none'
-                    }}
+                    className="list-item-button recent"
                   >
-                    <span style={{ fontSize: '1.25rem' }}>📂</span>
+                    <span className="icon-lg">📂</span>
                     {item.name}
                   </button>
                 ))}
@@ -354,7 +327,7 @@ function App() {
   }
 
   return (
-    <div className="container" style={{ maxWidth: '100%', padding: 0, height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="app-container">
       {selectedFile && (
         <AssetViewer
           file={selectedFile}
@@ -395,27 +368,24 @@ function App() {
       />
 
       {/* Sub-Header / Toolbar */}
-      <div style={{ padding: '0.5rem 2rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-secondary)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div className="sub-header">
+        <div className="sub-header-left">
           {viewMode === 'folder' ? (
             <>
               <button
                 onClick={() => handleToggleBookmark(rootHandle)}
                 title={isCurrentBookmarked ? "Remove Bookmark" : "Bookmark Folder"}
-                style={{
-                  background: 'none', fontSize: '1.25rem',
-                  color: isCurrentBookmarked ? '#fbbf24' : 'var(--text-secondary)',
-                  transition: 'transform 0.2s', border: 'none', cursor: 'pointer'
-                }}
+                className="bookmark-toggle-btn"
+                style={{ color: isCurrentBookmarked ? '#fbbf24' : 'var(--text-secondary)' }}
               >
                 {isCurrentBookmarked ? '⭐' : '☆'}
               </button>
-              <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <span className="stats-text">
                 {files.length} total assets
               </span>
             </>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="sub-header-left">
               <button
                 onClick={() => {
                   if (viewMode === 'collection') {
@@ -425,16 +395,11 @@ function App() {
                     setFiles(projectFiles)
                   }
                 }}
-                style={{
-                  background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)',
-                  padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-md)', cursor: 'pointer',
-                  fontSize: '0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  color: 'var(--text-primary)'
-                }}
+                className="back-button"
               >
                 <span>⬅️</span> {viewMode === 'collection' ? 'Back to Collections' : 'Back to Project'}
               </button>
-              <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>
+              <h3 className="collection-title">
                 {viewMode === 'recent' ? 'Recent Files' :
                   viewMode === 'collections-overview' ? 'Collections' :
                     `Collection: ${activeCollection}`}
@@ -443,29 +408,20 @@ function App() {
           )}
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="sub-header-right">
           {selectedFiles.size > 0 && (
             <>
               <button
                 onClick={() => downloadBatch(files, currentPath, rootHandle?.name)}
                 disabled={isDownloading}
-                style={{
-                  backgroundColor: 'var(--accent-primary)', color: 'var(--bg-primary)',
-                  border: 'none', padding: '0.25rem 0.75rem', borderRadius: 'var(--radius-md)',
-                  fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center',
-                  gap: '0.5rem', fontSize: '0.875rem'
-                }}
+                className="action-btn primary"
               >
                 {isDownloading ? 'Zipping...' : `Download (${selectedFiles.size})`}
               </button>
 
               <button
                 onClick={clearSelection}
-                style={{
-                  backgroundColor: 'transparent', color: 'var(--text-secondary)',
-                  border: '1px solid var(--border-color)', padding: '0.25rem 0.75rem',
-                  borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: '0.875rem'
-                }}
+                className="action-btn secondary"
               >
                 Clear
               </button>
@@ -473,8 +429,7 @@ function App() {
           )}
 
           <button
-            className="btn-primary"
-            style={{ backgroundColor: 'var(--bg-tertiary)', padding: '0.25rem 0.75rem', fontSize: '0.875rem', color: 'var(--text-primary)' }}
+            className="action-btn tertiary"
             onClick={handleOpenFolder}
           >
             Change Folder
@@ -482,7 +437,7 @@ function App() {
         </div>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div className="main-layout">
         {/* Sidebar */}
         <FolderTree
           key={rootHandle?.name || 'no-root'}
@@ -501,19 +456,16 @@ function App() {
         {/* Resizer Handle */}
         <div
           onMouseDown={startResizing}
-          style={{
-            width: '5px', cursor: 'col-resize',
-            backgroundColor: isResizing ? 'var(--accent-primary)' : 'transparent',
-            transition: 'background-color 0.2s', zIndex: 10
-          }}
+          className={`resizer ${isResizing ? 'active' : ''}`}
+          style={{ backgroundColor: isResizing ? 'var(--accent-primary)' : 'transparent' }}
           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--accent-primary)'}
           onMouseLeave={(e) => !isResizing && (e.currentTarget.style.backgroundColor = 'transparent')}
         />
 
         {/* Main Content */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '1rem 2rem', overflowY: 'auto', position: 'relative' }}>
+        <div className="content-area">
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+          <div className="breadcrumb-row">
             {viewMode === 'folder' ? (
               <>
                 <Breadcrumb currentPath={currentPath} onNavigate={(path) => {
@@ -524,41 +476,27 @@ function App() {
                 <button
                   onClick={() => handleToggleFolderBookmark(rootHandle?.name, currentPath)}
                   title={isCurrentPathBookmarked ? "Remove Shortcut" : "Add Shortcut to this folder"}
-                  style={{
-                    background: isCurrentPathBookmarked ? 'var(--accent-primary)' : 'var(--bg-tertiary)',
-                    border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '1rem',
-                    color: isCurrentPathBookmarked ? 'white' : 'var(--text-secondary)',
-                    transition: 'all 0.2s', width: '32px', height: '32px', borderRadius: '50%',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                  }}
-                  onMouseEnter={(e) => !isCurrentPathBookmarked && (e.currentTarget.style.color = 'var(--text-primary)')}
-                  onMouseLeave={(e) => !isCurrentPathBookmarked && (e.currentTarget.style.color = 'var(--text-secondary)')}
+                  className={`shortcut-btn ${isCurrentPathBookmarked ? 'active' : 'inactive'}`}
                 >
                   {isCurrentPathBookmarked ? '★' : '☆'}
                 </button>
               </>
             ) : (
-              <div style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              <div className="stats-text">
                 Showing {filteredFiles.length} assets in {viewMode === 'recent' ? 'Recent Files' : activeCollection}
               </div>
             )}
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="controls-row">
             {/* Sort Row */}
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+            <div className="filters-container">
               {/* Tag Filter - Only show in Folder mode or Recent mode */}
               {viewMode !== 'collection' && uniqueTags.length > 0 && (
                 <select
                   value={selectedTag}
                   onChange={(e) => setSelectedTag(e.target.value)}
-                  style={{
-                    padding: '0 1rem', borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)',
-                    color: 'var(--text-primary)', fontSize: '0.875rem', outline: 'none',
-                    cursor: 'pointer', minWidth: '150px'
-                  }}
+                  className="filter-select min-w"
                 >
                   <option value="">All Tags</option>
                   {uniqueTags.map(tag => (
@@ -570,12 +508,7 @@ function App() {
               <select
                 value={activeFilter}
                 onChange={(e) => setActiveFilter(e.target.value)}
-                style={{
-                  padding: '0 1rem', borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)', fontSize: '0.875rem', outline: 'none',
-                  cursor: 'pointer'
-                }}
+                className="filter-select"
               >
                 <option value="all">All Assets</option>
                 <option value="model">3D Models</option>
@@ -587,12 +520,7 @@ function App() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                style={{
-                  padding: '0 1rem', borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)', fontSize: '0.875rem', outline: 'none',
-                  cursor: 'pointer'
-                }}
+                className="filter-select"
               >
                 <option value="name-asc">Name (A-Z)</option>
                 <option value="name-desc">Name (Z-A)</option>
@@ -603,42 +531,14 @@ function App() {
 
           {/* Grid */}
           {isScanning ? (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                backgroundColor: 'var(--bg-secondary)',
-                padding: '0.5rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--accent-primary)',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-              }}>
-                <div className="spinner" style={{
-                  width: '16px',
-                  height: '16px',
-                  border: '2px solid var(--text-secondary)',
-                  borderTopColor: 'var(--accent-primary)',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
+            <div className="scanning-container">
+              <div className="scanning-badge">
+                <div className="spinner" />
                 <span>Scanning... ({files.length} / {totalScanned} scanned)</span>
-                <style>{`
-                      @keyframes spin {
-                          to { transform: rotate(360deg); }
-                      }
-                  `}</style>
               </div>
               <button
                 onClick={stopScan}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: 'var(--bg-tertiary)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer'
-                }}
+                className="stop-scan-btn"
               >
                 Stop Scan
               </button>
@@ -647,12 +547,7 @@ function App() {
             <>
               {/* Folder Search Logic */}
               {searchType === 'folder' && searchQuery ? (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                  gap: '1.5rem',
-                  alignContent: 'start'
-                }}>
+                <div className="folder-grid">
                   {folders
                     .filter(f => f.name.toLowerCase().includes(searchQuery.toLowerCase()))
                     .map(folder => (
@@ -662,42 +557,18 @@ function App() {
                           setCurrentPath(folder.path)
                           setSearchQuery('') // Clear search on navigate
                         }}
-                        style={{
-                          backgroundColor: 'var(--bg-secondary)',
-                          borderRadius: 'var(--radius-md)',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          border: '1px solid var(--border-color)',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          aspectRatio: '1',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '1rem',
-                          textAlign: 'center'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-4px)'
-                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'
-                          e.currentTarget.style.borderColor = 'var(--accent-primary)'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'none'
-                          e.currentTarget.style.boxShadow = 'none'
-                          e.currentTarget.style.borderColor = 'var(--border-color)'
-                        }}
+                        className="folder-card"
                       >
-                        <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>📂</div>
-                        <div style={{ fontWeight: 500, wordBreak: 'break-word', fontSize: '0.9rem' }}>{folder.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem', wordBreak: 'break-all' }}>
+                        <div className="folder-icon">📂</div>
+                        <div className="folder-name">{folder.name}</div>
+                        <div className="folder-path">
                           {folder.path}
                         </div>
                       </div>
                     ))}
                 </div>
               ) : filteredFiles.length === 0 ? (
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px', color: 'var(--text-secondary)', flexDirection: 'column', gap: '1rem' }}>
+                <div className="no-assets-container">
                   <div>No assets found.</div>
                   <button
                     onClick={() => {
@@ -705,25 +576,13 @@ function App() {
                         refreshFolder(currentPath)
                       }
                     }}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      backgroundColor: 'var(--bg-secondary)',
-                      border: '1px solid var(--accent-primary)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--text-primary)',
-                      cursor: 'pointer'
-                    }}
+                    className="refresh-btn"
                   >
                     Refresh Folder
                   </button>
                 </div>
               ) : (
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                  gap: '1.5rem',
-                  alignContent: 'start'
-                }}>
+                <div className="file-grid">
                   {filteredFiles.map((file) => {
                     const isSelected = selectedFiles.has(file.path)
                     return (
@@ -736,83 +595,41 @@ function App() {
                             setSelectedFile(file)
                           }
                         }}
-                        style={{
-                          backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'var(--bg-secondary)',
-                          borderRadius: 'var(--radius-md)',
-                          overflow: 'hidden',
-                          cursor: 'pointer',
-                          border: isSelected ? '2px solid var(--accent-primary)' : '1px solid var(--border-color)',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          aspectRatio: '1',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          position: 'relative' // Ensure relative positioning for absolute children
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.transform = 'translateY(-4px)'
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.transform = 'none'
-                            e.currentTarget.style.boxShadow = 'none'
-                          }
-                        }}
+                        className={`file-card ${isSelected ? 'selected' : ''}`}
                       >
                         {/* Selection Checkbox */}
                         <div
                           onClick={(e) => toggleSelection(e, file.path)}
-                          style={{
-                            position: 'absolute',
-                            top: '0.5rem',
-                            left: '0.5rem',
-                            zIndex: 10,
-                            cursor: 'pointer'
-                          }}
+                          className="checkbox-wrapper"
                         >
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={() => { }} // Handled by div onClick to capture bubbling or specific handler
-                            style={{
-                              width: '1.25rem',
-                              height: '1.25rem',
-                              cursor: 'pointer',
-                              accentColor: 'var(--accent-primary)'
-                            }}
+                            onChange={() => { }} // Handled by div onClick
+                            className="checkbox-input"
                           />
                         </div>
 
                         {/* Thumbnail */}
-                        <div style={{ flex: 1, overflow: 'hidden', position: 'relative', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="thumbnail-wrapper">
                           {IMAGE_EXTENSIONS.includes(file.type) ? (
                             <LazyImage file={file} />
                           ) : (
-                            <div style={{ fontSize: '3rem' }}>
+                            <div className="file-icon-placeholder">
                               {MODEL_EXTENSIONS.includes(file.type) ? '📦' :
                                 AUDIO_EXTENSIONS.includes(file.type) ? '🎵' :
                                   VIDEO_EXTENSIONS.includes(file.type) ? '🎬' : '📄'}
                             </div>
                           )}
                           {/* Type Badge */}
-                          <div style={{
-                            position: 'absolute', top: '0.5rem', right: '0.5rem',
-                            backgroundColor: 'rgba(0,0,0,0.7)', color: 'white',
-                            padding: '0.25rem 0.5rem', borderRadius: '4px',
-                            fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase'
-                          }}>
+                          <div className="type-badge">
                             {file.type.replace('.', '')}
                           </div>
                         </div>
 
                         {/* Info */}
-                        <div style={{ padding: '0.75rem' }}>
-                          <div style={{
-                            fontWeight: 500, marginBottom: '0.25rem',
-                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-                          }} title={file.name}>
+                        <div className="file-info">
+                          <div className="file-name-text" title={file.name}>
                             {file.name}
                           </div>
                         </div>

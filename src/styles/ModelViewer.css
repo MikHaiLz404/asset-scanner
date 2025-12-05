@@ -1,0 +1,117 @@
+/* Model Viewer Container */
+.viewer-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Loading State */
+.loading-container {
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+/* Error State */
+.error-container {
+    color: red;
+    padding: 2rem;
+    text-align: center;
+}
+
+.error-pre {
+    background: #333;
+    padding: 1rem;
+    border-radius: 4px;
+    overflow: auto;
+}
+
+/* Stats Panel (Top Right) */
+.stats-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 12px;
+    border-radius: 8px;
+    min-width: 120px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #eee;
+}
+
+.stat-label {
+    color: #aaa;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-family: monospace;
+    font-weight: bold;
+}
+
+/* Controls Bar (Bottom Center) */
+.controls-bar {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    border-radius: 30px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.divider {
+    width: 1px;
+    height: 20px;
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Control Buttons */
+.control-button {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.control-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.control-button.active {
+    background: #4CAF50;
+    color: white;
+}
+
+.control-button.action {
+    background: #2196F3;
+}
+
+.control-button.action:hover {
+    background: #1976D2;
+}
