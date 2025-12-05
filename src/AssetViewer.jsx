@@ -2,6 +2,7 @@ import React, { Suspense, useEffect, useState, useMemo } from 'react'
 import ModelViewer from './components/ModelViewer'
 import { addTag, removeTag, getTagsForFile } from './db'
 import { IMAGE_EXTENSIONS, MODEL_EXTENSIONS } from './utils/constants'
+import './styles/AssetViewer.css'
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -20,9 +21,9 @@ class ErrorBoundary extends React.Component {
     render() {
         if (this.state.hasError) {
             return (
-                <div style={{ color: 'red', padding: '2rem', textAlign: 'center' }}>
+                <div className="error-container">
                     <h2>Something went wrong.</h2>
-                    <pre style={{ background: '#333', padding: '1rem', borderRadius: '4px', overflow: 'auto' }}>
+                    <pre className="error-pre">
                         {this.state.error?.message}
                     </pre>
                 </div>
@@ -137,43 +138,17 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
     }
 
     return (
-        <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            zIndex: 1000,
-            display: 'flex',
-            color: 'white'
-        }}>
+        <div className="viewer-overlay">
             {/* Main Content Area */}
-            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div className="viewer-content-wrapper">
                 <button
                     onClick={onClose}
-                    style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        right: '1rem',
-                        zIndex: 10,
-                        background: 'rgba(0,0,0,0.5)',
-                        border: 'none',
-                        color: 'white',
-                        fontSize: '1.5rem',
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
+                    className="close-button"
                 >
                     ✕
                 </button>
 
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                <div className="viewer-display-area">
                     {/* Only show content if the URL matches the current file */}
                     {url && loadedFile === file ? (
                         <>
@@ -185,7 +160,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                                 <img
                                     src={url}
                                     alt={file.name}
-                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    className="preview-image"
                                     onLoad={handleImageLoad}
                                 />
                             )}
@@ -195,14 +170,14 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                                     src={url}
                                     controls
                                     autoPlay
-                                    style={{ maxWidth: '100%', maxHeight: '100%' }}
+                                    className="preview-video"
                                     onLoadedMetadata={handleVideoLoadedMetadata}
                                 />
                             )}
 
                             {!isModel && !isImage && !isVideo && (
-                                <div style={{ textAlign: 'center' }}>
-                                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📄</div>
+                                <div className="no-preview">
+                                    <div className="no-preview-icon">📄</div>
                                     <div>Preview not available for this file type</div>
                                 </div>
                             )}
@@ -217,27 +192,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
             {hasPrevious && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onPrevious(); }}
-                    style={{
-                        position: 'absolute',
-                        left: '1rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(0,0,0,0.5)',
-                        border: 'none',
-                        color: 'white',
-                        fontSize: '2rem',
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 20,
-                        transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.5)'}
+                    className="nav-button prev"
                 >
                     ‹
                 </button>
@@ -245,153 +200,95 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
             {hasNext && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onNext(); }}
-                    style={{
-                        position: 'absolute',
-                        right: '320px', // Avoid sidebar (300px + 20px padding)
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        background: 'rgba(0,0,0,0.5)',
-                        border: 'none',
-                        color: 'white',
-                        fontSize: '2rem',
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        zIndex: 20,
-                        transition: 'background 0.2s'
-                    }}
-                    onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.8)'}
-                    onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.5)'}
+                    className="nav-button next"
                 >
                     ›
                 </button>
             )}
 
             {/* Sidebar */}
-            <div style={{
-                width: '300px',
-                backgroundColor: '#1a1a1a',
-                borderLeft: '1px solid #333',
-                padding: '1.5rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.5rem',
-                overflowY: 'auto'
-            }}>
-                <div>
-                    <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem', wordBreak: 'break-all' }}>
+            <div className="viewer-sidebar">
+                <div className="file-details">
+                    <h2>
                         {file.name}
                     </h2>
-                    <p style={{ color: '#888', fontSize: '0.875rem', wordBreak: 'break-all' }}>
+                    <p>
                         {file.path}
                     </p>
                 </div>
 
                 <button
                     onClick={handleDownload}
-                    style={{
-                        width: '100%',
-                        padding: '0.75rem',
-                        backgroundColor: 'var(--accent-primary)',
-                        color: 'var(--bg-primary)',
-                        border: 'none',
-                        borderRadius: 'var(--radius-md)',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '0.5rem'
-                    }}
+                    className="download-button"
                 >
                     <span>⬇️</span> Download File
                 </button>
 
-                <div style={{ height: '1px', backgroundColor: '#333' }} />
+                <div className="divider" />
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div className="metadata-section">
                     <div>
-                        <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <label className="metadata-label">
                             Type
                         </label>
-                        <div style={{ fontSize: '0.875rem' }}>{file.type.toUpperCase()}</div>
+                        <div className="metadata-value">{file.type.toUpperCase()}</div>
                     </div>
 
                     {metadata && (
                         <>
                             <div>
-                                <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <label className="metadata-label">
                                     Size
                                 </label>
-                                <div style={{ fontSize: '0.875rem' }}>{FormatBytes(metadata.size)}</div>
+                                <div className="metadata-value">{FormatBytes(metadata.size)}</div>
                             </div>
                             <div>
-                                <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                <label className="metadata-label">
                                     Last Modified
                                 </label>
-                                <div style={{ fontSize: '0.875rem' }}>
+                                <div className="metadata-value">
                                     {new Date(metadata.lastModified).toLocaleString()}
                                 </div>
                             </div>
 
                             {dimensions && (
                                 <div>
-                                    <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <label className="metadata-label">
                                         Resolution
                                     </label>
-                                    <div style={{ fontSize: '0.875rem' }}>{dimensions.width} x {dimensions.height} px</div>
+                                    <div className="metadata-value">{dimensions.width} x {dimensions.height} px</div>
                                 </div>
                             )}
 
                             {duration && (
                                 <div>
-                                    <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                                    <label className="metadata-label">
                                         Duration
                                     </label>
-                                    <div style={{ fontSize: '0.875rem' }}>{Math.round(duration)}s</div>
+                                    <div className="metadata-value">{Math.round(duration)}s</div>
                                 </div>
                             )}
                         </>
                     )}
                 </div>
 
-                <div style={{ height: '1px', backgroundColor: '#333' }} />
+                <div className="divider" />
 
                 {/* Tags Section */}
                 <div>
-                    <label style={{ color: '#888', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '0.5rem' }}>
+                    <label className="tags-label">
                         Tags
                     </label>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+                    <div className="tags-list">
                         {tags.map(tag => (
                             <span
                                 key={tag}
-                                style={{
-                                    backgroundColor: '#333',
-                                    padding: '0.25rem 0.5rem',
-                                    borderRadius: '4px',
-                                    fontSize: '0.875rem',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}
+                                className="tag-item"
                             >
                                 {tag}
                                 <button
                                     onClick={() => handleRemoveTag(tag)}
-                                    style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#888',
-                                        cursor: 'pointer',
-                                        padding: 0,
-                                        fontSize: '1rem',
-                                        lineHeight: 1
-                                    }}
+                                    className="tag-remove-btn"
                                 >
                                     ×
                                 </button>
@@ -404,15 +301,7 @@ export default function AssetViewer({ file, onClose, onNext, onPrevious, hasNext
                         onChange={(e) => setTagInput(e.target.value)}
                         onKeyDown={handleAddTag}
                         placeholder="Add tag + Enter"
-                        style={{
-                            width: '100%',
-                            padding: '0.5rem',
-                            backgroundColor: '#333',
-                            border: '1px solid #444',
-                            borderRadius: '4px',
-                            color: 'white',
-                            outline: 'none'
-                        }}
+                        className="tag-input"
                     />
                 </div>
             </div>

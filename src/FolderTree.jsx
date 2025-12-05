@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react'
+import './styles/FolderTree.css'
 
 // Helper to build tree from file list or folder list
 const buildFolderTree = (items, isFolderList = false) => {
@@ -90,50 +91,22 @@ const TreeNode = ({ node, currentPath, onSelect, level = 0 }) => {
             <div
                 ref={nodeRef}
                 onClick={handleClick}
-                style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '0.25rem 0.5rem',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    backgroundColor: isActive ? 'var(--accent-primary)' : 'transparent',
-                    color: isActive ? 'var(--bg-primary)' : 'var(--text-secondary)',
-                    marginBottom: '2px',
-                    transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                    if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-tertiary)'
-                        e.currentTarget.style.color = 'var(--text-primary)'
-                    }
-                }}
-                onMouseLeave={(e) => {
-                    if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'transparent'
-                        e.currentTarget.style.color = 'var(--text-secondary)'
-                    }
-                }}
+                className={`tree-node-content ${isActive ? 'active' : ''}`}
             >
                 {hasChildren && (
                     <span
                         onClick={handleToggle}
-                        style={{
-                            marginRight: '0.5rem',
-                            fontSize: '0.75rem',
-                            width: '1rem',
-                            display: 'inline-block',
-                            textAlign: 'center'
-                        }}
+                        className="tree-toggle-icon"
                     >
                         {isExpanded ? '▼' : '▶'}
                     </span>
                 )}
-                {!hasChildren && <span style={{ width: '1.5rem' }} />}
+                {!hasChildren && <span className="tree-spacer" />}
 
-                <span style={{ marginRight: '0.5rem' }}>
+                <span className="tree-folder-icon">
                     {isActive ? '📂' : '📁'}
                 </span>
-                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <span className="tree-node-name">
                     {node.name}
                 </span>
             </div>
@@ -164,26 +137,14 @@ export default function FolderTree({ files, folders, currentPath, onSelect, widt
     }, [files, folders])
 
     return (
-        <div style={{
-            width: `${width}px`,
-            minWidth: `${width}px`, // Prevent shrinking
-            borderRight: '1px solid var(--border-color)',
-            padding: '1rem',
-            overflowY: 'auto',
-            overflowX: 'hidden', // Hide horizontal scrollbar if possible, or 'auto'
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-        }}>
-            <div style={{
-                fontSize: '0.75rem',
-                textTransform: 'uppercase',
-                color: 'var(--text-secondary)',
-                fontWeight: 'bold',
-                marginBottom: '0.5rem',
-                marginTop: '0.5rem',
-                letterSpacing: '0.05em'
-            }}>
+        <div
+            className="folder-tree-container"
+            style={{
+                width: `${width}px`,
+                minWidth: `${width}px`
+            }}
+        >
+            <div className="folder-tree-header">
                 Folders
             </div>
             {/* Render root's children directly, not the root node itself */}
@@ -198,7 +159,7 @@ export default function FolderTree({ files, folders, currentPath, onSelect, widt
                     />
                 ))
             ) : (
-                <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                <div className="no-folders-message">
                     No folders found
                 </div>
             )}
