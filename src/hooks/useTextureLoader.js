@@ -24,18 +24,21 @@ export function useTextureLoader(file, url, projectFiles) {
                 const modelDir = modelPath.substring(0, modelPath.lastIndexOf('/'))
                 if (texPath.startsWith(modelDir + '/')) return true
 
-                // 2. "textures" or "Textures" folder in the same directory as model
-                // e.g. model: /a/b/model.fbx
-                // tex: /a/b/textures/tex.png
-                if (texPath.startsWith(modelDir + '/textures/') || texPath.startsWith(modelDir + '/Textures/')) return true
+                // 2. "textures", "Textures", "texture", "Texture" folder in the same directory as model
+                const textureVariants = ['textures', 'Textures', 'texture', 'Texture']
 
-                // 3. "textures" or "Textures" folder in the PARENT directory of model
-                // e.g. model: /a/b/model.fbx
-                // tex: /a/textures/tex.png
-                // This is common in some asset packs
+                for (const variant of textureVariants) {
+                    if (texPath.startsWith(modelDir + '/' + variant + '/')) return true
+                }
+
+                // 3. Texture folders in the PARENT directory of model
+                // e.g. model: /a/b/Meshes/model.fbx
+                // tex: /a/b/Texture/tex.png
                 const parentDir = modelDir.substring(0, modelDir.lastIndexOf('/'))
                 if (parentDir) {
-                    if (texPath.startsWith(parentDir + '/textures/') || texPath.startsWith(parentDir + '/Textures/')) return true
+                    for (const variant of textureVariants) {
+                        if (texPath.startsWith(parentDir + '/' + variant + '/')) return true
+                    }
                 }
 
                 return false
@@ -76,9 +79,15 @@ export function useTextureLoader(file, url, projectFiles) {
                 placeholderUrl = URL.createObjectURL(placeholderBlob)
 
                 newManager.setURLModifier((resource) => {
-                    // CRITICAL: Do not modify the main model file URL!
                     if (resource === url) return resource
-                    if (resource.startsWith('blob:') || resource.startsWith('data:')) return resource
+                    if (resource.startsWith('data:')) return resource
+
+                    // If the resource is one of the valid blob URLs we created, return it.
+                    if (textureUrls.includes(resource)) return resource
+
+                    // Otherwise, if it's a 'blob:' URL not in our list, it's likely a malformed URL 
+                    // created by the loader resolving a relative path against the model's blob URL.
+                    // We fall through to extract the filename and look it up.
 
                     // The loader might request 'wood.jpg' or './wood.jpg' or 'path/to/wood.jpg'
                     // We extract the filename using regex to handle both / and \

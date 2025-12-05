@@ -8,6 +8,8 @@ import { fixMaterials, getModelStats } from '../utils/modelUtils'
 function FBXModel({ url, manager, isWireframe, onLoaded }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
+        loader.setPath('')
+        loader.setResourcePath('')
     }, [manager])
 
     const fbx = useLoader(FBXLoader, url, loaderFn)
@@ -41,6 +43,8 @@ function FBXModel({ url, manager, isWireframe, onLoaded }) {
 function OBJModel({ url, manager, isWireframe, onLoaded }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
+        loader.setPath('')
+        loader.setResourcePath('')
     }, [manager])
 
     const obj = useLoader(OBJLoader, url, loaderFn)
@@ -72,6 +76,8 @@ function OBJModel({ url, manager, isWireframe, onLoaded }) {
 function GLTFModel({ url, manager, isWireframe, onLoaded }) {
     const loaderFn = React.useCallback((loader) => {
         if (manager) loader.manager = manager
+        loader.setPath('')
+        loader.setResourcePath('')
     }, [manager])
 
     const gltf = useLoader(GLTFLoader, url, loaderFn)
